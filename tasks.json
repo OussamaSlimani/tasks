@@ -1,0 +1,42 @@
+[
+    {
+        "id": 1,
+        "name": "Recite Adhkars",
+        "description": "ssss",
+        "points": 25,
+        "days": [
+            "monday",
+            "tuesday",
+            "wednesday",
+            "thursday",
+            "friday",
+            "saturday",
+            "sunday"
+        ],
+        "priority": 1,
+        "category": "work",
+        "completed": {
+            "monday": true,
+            "tuesday": false,
+            "wednesday": false,
+            "thursday": true,
+            "friday": false,
+            "saturday": false,
+            "sunday": false
+        }
+    },
+    {
+        "id": 2,
+        "name": "sdfsdf",
+        "description": "",
+        "points": 5,
+        "days": [
+            ""
+        ],
+        "priority": 4,
+        "category": "other",
+        "completed": {
+            "": false
+        }
+    }
+]
