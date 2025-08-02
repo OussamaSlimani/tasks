@@ -19,7 +19,6 @@ let currentDay = "all";
 document.addEventListener("DOMContentLoaded", function () {
   loadTasks();
   setupEventListeners();
-  updateLastUpdatedTime();
 });
 
 // Set up event listeners
@@ -255,7 +254,6 @@ function loadTasks() {
       if (response.success) {
         renderTasks(response.tasks);
         updateTaskSummary(response.tasks.length);
-        updateLastUpdatedTime();
         if (currentDay !== "all") {
           updateStats(response.stats);
         }
@@ -404,13 +402,6 @@ function updateTaskSummary(count) {
       ? "No tasks to display"
       : `${count} task${count > 1 ? "s" : ""} found`;
   document.getElementById("taskSummary").textContent = summary;
-}
-
-// Update last updated time
-function updateLastUpdatedTime() {
-  const now = new Date();
-  document.getElementById("lastUpdatedTime").textContent =
-    now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 // Toggle task completion status for specific day
