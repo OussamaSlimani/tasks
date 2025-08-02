@@ -21,58 +21,70 @@ if (!file_exists($jsonFile)) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<body>
-    <div class="container-fluid">
-        <div class="row">
+<body data-bs-theme="dark">
+    <div class="container-fluid g-0">
+        <div class="row flex-nowrap">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-0 bg-light">
-                <div class="d-flex flex-column p-3">
-                    <h4 class="text-center mb-4">
-                        Task Manager
-                    </h4>
+            <div class="col-md-3 col-lg-2 sidebar p-0 bg-dark">
+                <div class="d-flex flex-column p-3 h-100">
+                    <div class="sidebar-header mb-4">
+                        <h4 class="text-center mb-3">
+                           Task Manager
+                        </h4>
+                    </div>
                     <ul class="nav nav-pills flex-column mb-auto">
                         <li class="nav-item day-tab active" id="manageTasksTab">
-                            <a href="#" class="nav-link active">
-                                All Tasks
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-list-check me-2"></i>
+                                <span>All Tasks</span>
                             </a>
                         </li>
                         <li class="nav-item day-tab" data-day="monday">
-                            <a href="#" class="nav-link">
-                                Monday
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <span>Monday</span>
                             </a>
                         </li>
                         <li class="nav-item day-tab" data-day="tuesday">
-                            <a href="#" class="nav-link">
-                                Tuesday
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <span>Tuesday</span>
                             </a>
                         </li>
                         <li class="nav-item day-tab" data-day="wednesday">
-                            <a href="#" class="nav-link">
-                                Wednesday
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <span>Wednesday</span>
                             </a>
                         </li>
                         <li class="nav-item day-tab" data-day="thursday">
-                            <a href="#" class="nav-link">
-                                Thursday
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <span>Thursday</span>
                             </a>
                         </li>
                         <li class="nav-item day-tab" data-day="friday">
-                            <a href="#" class="nav-link">
-                                Friday
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <span>Friday</span>
                             </a>
                         </li>
                         <li class="nav-item day-tab" data-day="saturday">
-                            <a href="#" class="nav-link">
-                                Saturday
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <span>Saturday</span>
                             </a>
                         </li>
                         <li class="nav-item day-tab" data-day="sunday">
-                            <a href="#" class="nav-link">
-                                Sunday
+                            <a href="#" class="nav-link d-flex align-items-center">
+                                <i class="fas fa-calendar-day me-2"></i>
+                                <span>Sunday</span>
                             </a>
                         </li>
                     </ul>
@@ -80,38 +92,55 @@ if (!file_exists($jsonFile)) {
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
+            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4 main-content">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2 id="currentDayTitle">All Tasks</h2>
+                    <div>
+                        <h2 id="currentDayTitle" class="mb-0">
+                            <span id="dayGreeting"></span> All Tasks
+                        </h2>
+                        <small class="text-muted" id="taskSummary">Loading tasks...</small>
+                    </div>
                     <button class="btn btn-primary" id="createTaskBtn" data-bs-toggle="modal"
                         data-bs-target="#addTaskModal">
                         <i class="fas fa-plus me-2"></i>Create Task
                     </button>
                 </div>
 
-                <!-- Stats Section (shown only in day views) -->
+                <!-- Stats Section -->
                 <div class="row justify-content-center mb-4 d-none" id="statsSection">
                     <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
+                        <div class="card h-100 bg-dark-gradient">
+                            <div class="card-body text-center">
+                                <div class="stat-icon mb-3">
+                                    <i class="fas fa-clock text-warning"></i>
+                                </div>
                                 <h5 class="card-title">Pending Tasks</h5>
-                                <p class="display-6" id="pendingTasksStat">0</p>
+                                <p class="display-6 mb-0" id="pendingTasksStat">0</p>
+                                <small class="text-muted">Tasks remaining</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
+                        <div class="card h-100 bg-dark-gradient">
+                            <div class="card-body text-center">
+                                <div class="stat-icon mb-3">
+                                    <i class="fas fa-percent text-info"></i>
+                                </div>
                                 <h5 class="card-title">Completion Rate</h5>
-                                <p class="display-6" id="completionPercent">0%</p>
+                                <p class="display-6 mb-0" id="completionPercent">0%</p>
+                                <small class="text-muted">of daily goals</small>
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
+                        <div class="card h-100 bg-dark-gradient">
+                            <div class="card-body text-center">
+                                <div class="stat-icon mb-3">
+                                    <i class="fas fa-star text-success"></i>
+                                </div>
                                 <h5 class="card-title">Points Earned</h5>
-                                <p class="display-6" id="pointsDisplay">0/0</p>
+                                <p class="display-6 mb-0" id="pointsDisplay">0/0</p>
+                                <small class="text-muted">points today</small>
                             </div>
                         </div>
                     </div>
@@ -119,7 +148,6 @@ if (!file_exists($jsonFile)) {
 
                 <!-- Tasks List -->
                 <div class="list-group" id="tasksList">
-                    <!-- Tasks will be loaded via AJAX -->
                     <div class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -129,6 +157,7 @@ if (!file_exists($jsonFile)) {
             </div>
         </div>
     </div>
+
 
     <!-- Add Task Modal -->
     <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
@@ -281,6 +310,8 @@ if (!file_exists($jsonFile)) {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery for AJAX -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- sweetalert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
     <script src="js/script.js"></script>
 </body>

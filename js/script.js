@@ -19,6 +19,7 @@ let currentDay = "all";
 document.addEventListener("DOMContentLoaded", function () {
   loadTasks();
   setupEventListeners();
+  updateLastUpdatedTime();
 });
 
 // Set up event listeners
@@ -67,7 +68,7 @@ function setupEventListeners() {
     const category = document.getElementById("taskCategory").value;
 
     if (!taskName || selectedDays.length === 0) {
-      alert("Please fill all required fields");
+      showError("Please fill all required fields");
       return;
     }
 
@@ -91,6 +92,7 @@ function setupEventListeners() {
       },
       success: function (response) {
         if (response.success) {
+          showSuccess("Task created successfully");
           loadTasks();
 
           // Reset form and close modal
@@ -105,11 +107,11 @@ function setupEventListeners() {
             document.getElementById("addTaskModal")
           ).hide();
         } else {
-          alert("Error creating task: " + response.message);
+          showError("Error creating task: " + response.message);
         }
       },
       error: function (xhr, status, error) {
-        alert("Error creating task: " + error);
+        showError("Error creating task: " + error);
       },
     });
   });
@@ -128,7 +130,7 @@ function setupEventListeners() {
     const category = document.getElementById("editTaskCategory").value;
 
     if (!taskName || selectedDays.length === 0) {
-      alert("Please fill all required fields");
+      showError("Please fill all required fields");
       return;
     }
 
@@ -153,6 +155,7 @@ function setupEventListeners() {
       },
       success: function (response) {
         if (response.success) {
+          showSuccess("Task updated successfully");
           loadTasks();
           if (currentDay !== "all") {
             updateStats(response.stats);
@@ -161,11 +164,11 @@ function setupEventListeners() {
             document.getElementById("editTaskModal")
           ).hide();
         } else {
-          alert("Error updating task: " + response.message);
+          showError("Error updating task: " + response.message);
         }
       },
       error: function (xhr, status, error) {
-        alert("Error updating task: " + error);
+        showError("Error updating task: " + error);
       },
     });
   });
@@ -185,13 +188,38 @@ function getPriorityLabel(priority) {
 
 function getPriorityBadgeClass(priority) {
   const classes = {
-    1: "bg-danger",
-    2: "bg-warning",
-    3: "bg-info",
-    4: "bg-success",
-    5: "bg-secondary",
+    1: "bg-critical",
+    2: "bg-high",
+    3: "bg-medium",
+    4: "bg-low",
+    5: "bg-minimal",
   };
-  return classes[priority] || "bg-info";
+  return classes[priority] || "bg-secondary";
+}
+
+function getPriorityBadge(priority) {
+  const icons = {
+    1: "fa-triangle-exclamation",
+    2: "fa-circle-exclamation",
+    3: "fa-equals",
+    4: "fa-arrow-down",
+    5: "fa-arrow-down-long",
+  };
+  return `<span class="badge ${getPriorityBadgeClass(priority)}">
+    <i class="fas ${icons[priority] || "fa-info"}"></i>
+    ${getPriorityLabel(priority)}
+  </span>`;
+}
+
+function getCategoryBadge(category) {
+  const icons = {
+    work: "fa-briefcase",
+    personal: "fa-user",
+    other: "fa-question",
+  };
+  return `<span class="badge bg-secondary">
+    ${capitalize(category)}
+  </span>`;
 }
 
 function calculatePointsFromPriority(priority) {
@@ -226,17 +254,22 @@ function loadTasks() {
     success: function (response) {
       if (response.success) {
         renderTasks(response.tasks);
+        updateTaskSummary(response.tasks.length);
+        updateLastUpdatedTime();
         if (currentDay !== "all") {
           updateStats(response.stats);
         }
       } else {
         tasksList.innerHTML =
           '<div class="empty-message">Error loading tasks</div>';
+        updateTaskSummary(0);
       }
     },
     error: function (xhr, status, error) {
       tasksList.innerHTML =
         '<div class="empty-message">Error loading tasks</div>';
+      updateTaskSummary(0);
+      showError("Failed to load tasks: " + error);
     },
   });
 }
@@ -251,105 +284,91 @@ function renderTasks(tasks) {
   let html = "";
 
   tasks.forEach((task) => {
-    // Check if task is completed for the current day (if viewing a specific day)
     const isCompleted =
       currentDay !== "all" && task.completed && task.completed[currentDay];
 
-    // Task item HTML
     html += `
-            <div class="list-group-item task-item priority-${
-              task.priority
-            } d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center gap-3">
-                    <span style="${
-                      isCompleted
-                        ? "text-decoration: line-through; color: #6c757d;"
-                        : ""
-                    }">
-                        ${task.name}
-                    </span>
-                    <span class="badge ${getPriorityBadgeClass(task.priority)}">
-                        ${getPriorityLabel(task.priority)}
-                    </span>
-                    <span class="badge ${
-                      task.category === "work"
-                        ? "bg-primary"
-                        : task.category === "personal"
-                        ? "bg-success"
-                        : "bg-secondary"
-                    }">
-                        ${
-                          task.category.charAt(0).toUpperCase() +
-                          task.category.slice(1)
-                        }
-                    </span>
-        `;
+      <div class="list-group-item task-item mt-3 d-flex justify-content-between align-items-center border ${
+        isCompleted ? "task-completed" : ""
+      }">
+        <div>
+          <div class="mb-2" style="${
+            isCompleted ? "text-decoration: line-through; color: #6c757d;" : ""
+          }">
+            <p class="mb-0" style="font-size: 1.2rem;">${task.name}</p>
+          </div>
 
-    // Days (only shown in "All Tasks" view)
+          <div class="d-flex align-items-center gap-2 mb-2">
+            ${getPriorityBadge(task.priority)}
+            ${getCategoryBadge(task.category)}
+    `;
+
     if (currentDay === "all") {
-      html += '<div class="ms-3 d-flex gap-1">';
+      html += `<div class="ms-2 d-flex gap-1">`;
       task.days.forEach((day) => {
-        const dayCompleted = (task.completed && task.completed[day]) || false;
-        html += `<span class="badge day-badge ${
-          dayCompleted ? "bg-success" : "bg-light text-dark"
-        }">${day.substring(0, 3)}</span>`;
+        const dayCompleted = task.completed?.[day] || false;
+        html += `
+          <span class="badge day-badge ${
+            dayCompleted ? "bg-success" : "bg-light text-dark"
+          }">
+            ${day.substring(0, 3)}
+          </span>
+        `;
       });
-      html += "</div>";
+      html += `</div>`;
     }
 
-    // Task actions
-    html += '</div><div class="d-flex gap-2">';
+    html += `</div></div><div class="d-flex gap-2">`;
 
-    // Show description button if there's a description (only in day views)
-    if (
-      currentDay !== "all" &&
-      task.description &&
-      task.description.trim() !== ""
-    ) {
-      html += `
-                <button class="description-btn has-description" onclick="showDescription('${escapeHtml(
-                  task.description
-                )}')" title="View Description">
-                    <i class="fas fa-eye"></i>
-                </button>
-            `;
-    } else if (currentDay !== "all") {
-      html += `
-                <button class="description-btn" title="No Description" disabled>
-                    <i class="fas fa-eye"></i>
-                </button>
-            `;
-    }
-
+    // Description button (day-specific views only)
     if (currentDay !== "all") {
-      // Complete button in day-specific views
+      if (task.description?.trim()) {
+        html += `
+          <button class="btn btn-sm btn-outline-primary description-btn has-description" onclick="showDescription('${escapeHtml(
+            task.description
+          )}')" title="View Description">
+            <i class="fas fa-eye"></i>
+          </button>
+        `;
+      } else {
+        html += `
+          <button class="btn btn-sm btn-outline-secondary description-btn" title="No Description" disabled>
+            <i class="fas fa-eye"></i>
+          </button>
+        `;
+      }
+
+      // Complete button
       html += `
-                <button class="btn btn-sm ${
-                  isCompleted ? "btn-outline-secondary" : "btn-outline-success"
-                }" 
-                        onclick="toggleTaskComplete(${task.id})" 
-                        title="${
-                          isCompleted ? "Mark Incomplete" : "Mark Complete"
-                        }">
-                    <i class="fas ${isCompleted ? "fa-undo" : "fa-check"}"></i>
-                </button>
-            `;
+        <button class="btn btn-sm ${
+          isCompleted ? "btn-outline-secondary" : "btn-outline-success"
+        }"
+                onclick="toggleTaskComplete(${task.id})"
+                title="${isCompleted ? "Mark Incomplete" : "Mark Complete"}">
+          <i class="fas ${isCompleted ? "fa-undo" : "fa-check"}"></i>
+        </button>
+      `;
     } else {
-      // Edit and delete buttons (shown only in all tasks view)
+      // Edit & Delete (all tasks view only)
       html += `
-                <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${task.id})" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
+        <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${task.id})" title="Edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      `;
     }
 
-    html += "</div></div>";
+    html += `</div></div>`;
   });
 
   tasksList.innerHTML = html;
+}
+
+// Utility to capitalize first letter
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // Show description in modal
@@ -378,6 +397,22 @@ function updateStats(stats) {
   pointsDisplay.textContent = `${stats.completedPoints}/${stats.totalPoints}`;
 }
 
+// Update task summary
+function updateTaskSummary(count) {
+  const summary =
+    count === 0
+      ? "No tasks to display"
+      : `${count} task${count > 1 ? "s" : ""} found`;
+  document.getElementById("taskSummary").textContent = summary;
+}
+
+// Update last updated time
+function updateLastUpdatedTime() {
+  const now = new Date();
+  document.getElementById("lastUpdatedTime").textContent =
+    now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 // Toggle task completion status for specific day
 function toggleTaskComplete(taskId) {
   $.ajax({
@@ -392,37 +427,40 @@ function toggleTaskComplete(taskId) {
       if (response.success) {
         loadTasks();
       } else {
-        alert("Error updating task: " + response.message);
+        console.error("Error updating task: " + response.message);
       }
     },
     error: function (xhr, status, error) {
-      alert("Error updating task: " + error);
+      console.error("Error updating task: " + error);
     },
   });
 }
 
 // Delete task
 function deleteTask(taskId) {
-  if (confirm("Are you sure you want to delete this task?")) {
-    $.ajax({
-      url: "api.php",
-      type: "POST",
-      data: {
-        action: "delete",
-        id: taskId,
-      },
-      success: function (response) {
-        if (response.success) {
-          loadTasks();
-        } else {
-          alert("Error deleting task: " + response.message);
-        }
-      },
-      error: function (xhr, status, error) {
-        alert("Error deleting task: " + error);
-      },
-    });
-  }
+  confirmAction("This will permanently delete the task.").then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+        url: "api.php",
+        type: "POST",
+        data: {
+          action: "delete",
+          id: taskId,
+        },
+        success: function (response) {
+          if (response.success) {
+            showSuccess("Task deleted successfully");
+            loadTasks();
+          } else {
+            showError("Error deleting task: " + response.message);
+          }
+        },
+        error: function (xhr, status, error) {
+          showError("Error deleting task: " + error);
+        },
+      });
+    }
+  });
 }
 
 // Open edit modal with task data
@@ -475,11 +513,50 @@ function openEditModal(taskId) {
         );
         editModal.show();
       } else {
-        alert("Error loading task: " + response.message);
+        showError("Error loading task: " + response.message);
       }
     },
     error: function (xhr, status, error) {
-      alert("Error loading task: " + error);
+      showError("Error loading task: " + error);
     },
+  });
+}
+
+// SweetAlert helpers
+function showError(message) {
+  Swal.fire({
+    icon: "error",
+    title: "Error",
+    text: message,
+    confirmButtonText: "OK",
+    background: "#252525",
+    color: "#e0e0e0",
+  });
+}
+
+function showSuccess(message) {
+  Swal.fire({
+    icon: "success",
+    title: "Success",
+    text: message,
+    confirmButtonText: "OK",
+    background: "#252525",
+    color: "#e0e0e0",
+    timer: 2000,
+    timerProgressBar: true,
+  });
+}
+
+function confirmAction(message) {
+  return Swal.fire({
+    title: "Are you sure?",
+    text: message,
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#6c5ce7",
+    cancelButtonColor: "#495057",
+    confirmButtonText: "Yes, proceed",
+    background: "#252525",
+    color: "#e0e0e0",
   });
 }

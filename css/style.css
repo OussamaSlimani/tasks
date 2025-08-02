@@ -1,58 +1,283 @@
-.sidebar {
-  height: 100vh;
+:root {
+  --primary-color: #333;
+  --secondary-color: #a29bfe;
+  --success-color: #00b894;
+  --info-color: #0984e3;
+  --warning-color: #fdcb6e;
+  --danger-color: #d63031;
+  --dark-color: #2d3436;
+  --light-color: #f5f6fa;
 }
 
-.task-item {
+body {
+  font-family: "Poppins", sans-serif;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+.sidebar {
+  height: 100vh;
+  background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
+  border-right: 1px solid #333;
   transition: all 0.3s;
 }
 
-.priority-1 {
-  border-left: 4px solid #dc3545;
+.sidebar-header {
+  padding: 1rem 0;
+  border-bottom: 1px solid #333;
 }
 
-.priority-2 {
-  border-left: 4px solid #fd7e14;
+.sidebar .nav-link {
+  border-radius: 0.5rem;
+  margin: 0.25rem 0;
+  transition: all 0.2s;
+  color: #b0b0b0;
 }
 
-.priority-3 {
-  border-left: 4px solid #ffc107;
+.sidebar .nav-link:hover {
+  background-color: rgba(108, 92, 231, 0.1);
+  color: var(--light-color);
 }
 
-.priority-4 {
-  border-left: 4px solid #28a745;
-}
-
-.priority-5 {
-  border-left: 4px solid #6c757d;
-}
-
-.day-option.active {
-  background-color: #0d6efd;
+.sidebar .nav-link.active {
+  background-color: var(--primary-color);
   color: white;
+  font-weight: 500;
 }
 
-#tasksList .empty-message {
-  padding: 2rem;
+.sidebar .nav-link i {
+  width: 20px;
   text-align: center;
-  color: #6c757d;
+}
+
+.main-content {
+  background-color: #121212;
+  min-height: 100vh;
+}
+
+.card {
+  border: none;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.bg-dark-gradient {
+  background: linear-gradient(135deg, #252525 0%, #1a1a1a 100%);
+}
+
+.stat-icon {
+  font-size: 2rem;
+  opacity: 0.8;
+}
+
+.task-item {
+  border-radius: 0.75rem !important;
+  background-color: #252525;
+  border: 1px solid #333 !important;
+  transition: all 0.2s;
+}
+
+.task-item:hover {
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .day-badge {
-  min-width: 40px;
-  text-align: center;
-}
-
-.description-btn {
-  color: #6c757d;
-  border: none;
-  background: none;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
   padding: 0.25rem 0.5rem;
 }
 
-.description-btn:hover {
-  color: #0d6efd;
+.empty-message {
+  padding: 2rem;
+  text-align: center;
+  color: #777;
 }
 
-.description-btn.has-description {
-  color: #0d6efd;
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.modal-content {
+  background-color: #252525;
+  border: 1px solid #333;
+}
+
+.day-option.active,
+.edit-day-option.active {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Priority badges */
+.badge.bg-critical {
+  background-color: var(--danger-color);
+}
+
+.badge.bg-high {
+  background-color: #e17055;
+}
+
+.badge.bg-medium {
+  background-color: var(--warning-color);
+  color: #333;
+}
+
+.badge.bg-low {
+  background-color: var(--info-color);
+}
+
+.badge.bg-minimal {
+  background-color: var(--secondary-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+
+  .main-content {
+    margin-left: 0;
+  }
+}
+
+.task-completed {
+  background-color: rgba(0, 184, 148, 0.1);
+  border-left: 4px solid var(--success-color) !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #252525;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Add these new styles */
+.badge {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  padding: 0.35em 0.65em;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badge i {
+  font-size: 0.65rem;
+}
+
+/* Priority badges */
+.badge.bg-critical {
+  background-color: #ff4757;
+  color: white;
+}
+
+.badge.bg-high {
+  background-color: #ff6b81;
+  color: white;
+}
+
+.badge.bg-medium {
+  background-color: #ffa502;
+  color: #2f3542;
+}
+
+.badge.bg-low {
+  background-color: #1e90ff;
+  color: white;
+}
+
+.badge.bg-minimal {
+  background-color: #7bed9f;
+  color: #2f3542;
+}
+
+/* Category badges */
+.badge.bg-work {
+  background-color: #5352ed;
+  color: white;
+}
+
+.badge.bg-personal {
+  background-color: #ff7f50;
+  color: white;
+}
+
+.badge.bg-other {
+  background-color: #747d8c;
+  color: white;
+}
+
+/* Day badges */
+.day-badge {
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid transparent;
+}
+
+.day-badge.bg-light {
+  border-color: #dee2e6;
+}
+
+/* Button hover effect */
+.btn-hover-glow {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-hover-glow:hover {
+  box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+  transform: translateY(-2px);
+}
+
+/* SweetAlert customization */
+.swal2-popup {
+  background-color: #252525 !important;
+  border: 1px solid #333 !important;
+  color: #e0e0e0 !important;
+  border-radius: 0.75rem !important;
+}
+
+.swal2-title {
+  color: #f8f9fa !important;
+}
+
+.swal2-confirm {
+  background-color: #6c5ce7 !important;
+}
+
+.swal2-cancel {
+  background-color: #495057 !important;
 }
