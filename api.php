@@ -4,20 +4,101 @@ header('Content-Type: application/json');
 // Path to our JSON file
 $jsonFile = 'tasks.json';
 
-// Helper function to read tasks
+// Helper function to read tasks with error handling
 function readTasks() {
     global $jsonFile;
+    
+    // Create file if it doesn't exist
     if (!file_exists($jsonFile)) {
+        $emptyData = json_encode([], JSON_PRETTY_PRINT);
+        if (file_put_contents($jsonFile, $emptyData) === false) {
+            error_log("Failed to create tasks.json file");
+            return [];
+        }
         return [];
     }
+    
+    // Check if file is readable
+    if (!is_readable($jsonFile)) {
+        error_log("tasks.json file is not readable");
+        return [];
+    }
+    
     $data = file_get_contents($jsonFile);
-    return json_decode($data, true) ?: [];
+    
+    // Check if file read failed
+    if ($data === false) {
+        error_log("Failed to read tasks.json file");
+        return [];
+    }
+    
+    // Handle empty file
+    if (trim($data) === '') {
+        $emptyData = json_encode([], JSON_PRETTY_PRINT);
+        file_put_contents($jsonFile, $emptyData);
+        return [];
+    }
+    
+    $decoded = json_decode($data, true);
+    
+    // Check for JSON decode errors
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        error_log("JSON decode error: " . json_last_error_msg());
+        // Backup corrupted file
+        $backupFile = $jsonFile . '.backup.' . date('Y-m-d-H-i-s');
+        copy($jsonFile, $backupFile);
+        error_log("Corrupted file backed up to: " . $backupFile);
+        
+        // Reset to empty array
+        $emptyData = json_encode([], JSON_PRETTY_PRINT);
+        file_put_contents($jsonFile, $emptyData);
+        return [];
+    }
+    
+    return $decoded ?: [];
 }
 
-// Helper function to save tasks
+// Helper function to save tasks with atomic write and validation
 function saveTasks($tasks) {
     global $jsonFile;
-    file_put_contents($jsonFile, json_encode($tasks, JSON_PRETTY_PRINT));
+    
+    // Validate input
+    if (!is_array($tasks)) {
+        error_log("saveTasks: Input is not an array");
+        return false;
+    }
+    
+    // Validate each task structure
+    foreach ($tasks as $task) {
+        if (!is_array($task) || !isset($task['id']) || !isset($task['name'])) {
+            error_log("saveTasks: Invalid task structure found");
+            return false;
+        }
+    }
+    
+    $jsonData = json_encode($tasks, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    
+    if ($jsonData === false) {
+        error_log("saveTasks: JSON encoding failed");
+        return false;
+    }
+    
+    // Use atomic write (write to temp file, then rename)
+    $tempFile = $jsonFile . '.tmp.' . uniqid();
+    
+    if (file_put_contents($tempFile, $jsonData, LOCK_EX) === false) {
+        error_log("saveTasks: Failed to write temporary file");
+        return false;
+    }
+    
+    // Atomic rename
+    if (!rename($tempFile, $jsonFile)) {
+        error_log("saveTasks: Failed to rename temporary file");
+        unlink($tempFile); // Clean up temp file
+        return false;
+    }
+    
+    return true;
 }
 
 // Get action from request
@@ -39,7 +120,7 @@ try {
             } else {
                 // Filter tasks for the specific day
                 $filteredTasks = array_filter($tasks, function($task) use ($day) {
-                    return in_array($day, $task['days']);
+                    return isset($task['days']) && is_array($task['days']) && in_array($day, $task['days']);
                 });
                 
                 // Calculate stats
@@ -50,13 +131,13 @@ try {
                 $pendingTasks = $totalTasks - $completedTasks;
                 
                 $totalPoints = array_reduce($filteredTasks, function($sum, $task) {
-                    return $sum + $task['points'];
+                    return $sum + (isset($task['points']) ? (int)$task['points'] : 0);
                 }, 0);
                 
                 $completedPoints = array_reduce(array_filter($filteredTasks, function($task) use ($day) {
                     return isset($task['completed'][$day]) && $task['completed'][$day];
                 }), function($sum, $task) {
-                    return $sum + $task['points'];
+                    return $sum + (isset($task['points']) ? (int)$task['points'] : 0);
                 }, 0);
                 
                 $completionPercentage = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100) : 0;
@@ -76,12 +157,17 @@ try {
             
         case 'get_task':
             // Get a single task by ID
-            $id = $_GET['id'] ?? 0;
+            $id = (int)($_GET['id'] ?? 0);
+            if ($id <= 0) {
+                $response = ['success' => false, 'message' => 'Invalid task ID'];
+                break;
+            }
+            
             $tasks = readTasks();
             $task = null;
             
             foreach ($tasks as $t) {
-                if ($t['id'] == $id) {
+                if (isset($t['id']) && (int)$t['id'] === $id) {
                     $task = $t;
                     break;
                 }
@@ -96,11 +182,36 @@ try {
             
         case 'create':
             // Create a new task
+            if (!isset($_POST['task'])) {
+                $response = ['success' => false, 'message' => 'No task data provided'];
+                break;
+            }
+            
             $taskData = json_decode($_POST['task'], true);
+            if (!$taskData) {
+                $response = ['success' => false, 'message' => 'Invalid task data'];
+                break;
+            }
+            
+            // Validate required fields
+            if (!isset($taskData['name']) || trim($taskData['name']) === '') {
+                $response = ['success' => false, 'message' => 'Task name is required'];
+                break;
+            }
+            
+            if (!isset($taskData['days']) || !is_array($taskData['days']) || empty($taskData['days'])) {
+                $response = ['success' => false, 'message' => 'At least one day must be selected'];
+                break;
+            }
+            
             $tasks = readTasks();
             
             // Generate new ID
-            $newId = empty($tasks) ? 1 : max(array_column($tasks, 'id')) + 1;
+            $newId = 1;
+            if (!empty($tasks)) {
+                $ids = array_column($tasks, 'id');
+                $newId = max($ids) + 1;
+            }
             
             // Initialize completion status for each day
             $completedStatus = [];
@@ -110,32 +221,46 @@ try {
             
             $newTask = [
                 'id' => $newId,
-                'name' => $taskData['name'],
-                'description' => $taskData['description'] ?? '',
-                'points' => $taskData['points'],
+                'name' => trim($taskData['name']),
+                'description' => isset($taskData['description']) ? trim($taskData['description']) : '',
+                'points' => isset($taskData['points']) ? (int)$taskData['points'] : 10,
                 'days' => $taskData['days'],
-                'priority' => $taskData['priority'],
-                'category' => $taskData['category'],
+                'priority' => isset($taskData['priority']) ? (int)$taskData['priority'] : 3,
+                'category' => isset($taskData['category']) ? $taskData['category'] : 'work',
                 'completed' => $completedStatus
             ];
             
             $tasks[] = $newTask;
-            saveTasks($tasks);
             
-            $response = ['success' => true, 'task' => $newTask];
+            if (saveTasks($tasks)) {
+                $response = ['success' => true, 'task' => $newTask];
+            } else {
+                $response = ['success' => false, 'message' => 'Failed to save task'];
+            }
             break;
             
         case 'update':
             // Update an existing task
+            if (!isset($_POST['task'])) {
+                $response = ['success' => false, 'message' => 'No task data provided'];
+                break;
+            }
+            
             $taskData = json_decode($_POST['task'], true);
+            if (!$taskData || !isset($taskData['id'])) {
+                $response = ['success' => false, 'message' => 'Invalid task data'];
+                break;
+            }
+            
+            $taskId = (int)$taskData['id'];
             $tasks = readTasks();
             $updated = false;
             
             foreach ($tasks as &$task) {
-                if ($task['id'] == $taskData['id']) {
+                if (isset($task['id']) && (int)$task['id'] === $taskId) {
                     // Preserve completion status for existing days
                     $newCompleted = [];
-                    $newDays = $taskData['days'];
+                    $newDays = isset($taskData['days']) ? $taskData['days'] : $task['days'];
                     
                     foreach ($newDays as $day) {
                         if (isset($task['completed'][$day])) {
@@ -147,12 +272,12 @@ try {
                         }
                     }
                     
-                    $task['name'] = $taskData['name'];
-                    $task['description'] = $taskData['description'] ?? '';
-                    $task['points'] = $taskData['points'];
+                    $task['name'] = isset($taskData['name']) ? trim($taskData['name']) : $task['name'];
+                    $task['description'] = isset($taskData['description']) ? trim($taskData['description']) : $task['description'];
+                    $task['points'] = isset($taskData['points']) ? (int)$taskData['points'] : $task['points'];
                     $task['days'] = $newDays;
-                    $task['priority'] = $taskData['priority'];
-                    $task['category'] = $taskData['category'];
+                    $task['priority'] = isset($taskData['priority']) ? (int)$taskData['priority'] : $task['priority'];
+                    $task['category'] = isset($taskData['category']) ? $taskData['category'] : $task['category'];
                     $task['completed'] = $newCompleted;
                     $updated = true;
                     break;
@@ -160,8 +285,11 @@ try {
             }
             
             if ($updated) {
-                saveTasks($tasks);
-                $response = ['success' => true];
+                if (saveTasks($tasks)) {
+                    $response = ['success' => true];
+                } else {
+                    $response = ['success' => false, 'message' => 'Failed to save updated task'];
+                }
             } else {
                 $response = ['success' => false, 'message' => 'Task not found'];
             }
@@ -169,15 +297,24 @@ try {
             
         case 'toggle':
             // Toggle task completion status for specific day
-            $id = $_POST['id'] ?? 0;
+            $id = (int)($_POST['id'] ?? 0);
             $day = $_POST['day'] ?? '';
+            
+            if ($id <= 0 || $day === '') {
+                $response = ['success' => false, 'message' => 'Invalid task ID or day'];
+                break;
+            }
+            
             $tasks = readTasks();
             $toggled = false;
             
             foreach ($tasks as &$task) {
-                if ($task['id'] == $id) {
-                    if (isset($task['completed'][$day])) {
-                        $task['completed'][$day] = !$task['completed'][$day];
+                if (isset($task['id']) && (int)$task['id'] === $id) {
+                    if (!isset($task['completed'])) {
+                        $task['completed'] = [];
+                    }
+                    if (isset($task['days']) && in_array($day, $task['days'])) {
+                        $task['completed'][$day] = !($task['completed'][$day] ?? false);
                         $toggled = true;
                     }
                     break;
@@ -185,8 +322,11 @@ try {
             }
             
             if ($toggled) {
-                saveTasks($tasks);
-                $response = ['success' => true];
+                if (saveTasks($tasks)) {
+                    $response = ['success' => true];
+                } else {
+                    $response = ['success' => false, 'message' => 'Failed to save task status'];
+                }
             } else {
                 $response = ['success' => false, 'message' => 'Task not found or day invalid'];
             }
@@ -194,17 +334,26 @@ try {
             
         case 'delete':
             // Delete a task
-            $id = $_POST['id'] ?? 0;
+            $id = (int)($_POST['id'] ?? 0);
+            
+            if ($id <= 0) {
+                $response = ['success' => false, 'message' => 'Invalid task ID'];
+                break;
+            }
+            
             $tasks = readTasks();
             $initialCount = count($tasks);
             
             $tasks = array_filter($tasks, function($task) use ($id) {
-                return $task['id'] != $id;
+                return !isset($task['id']) || (int)$task['id'] !== $id;
             });
             
             if (count($tasks) < $initialCount) {
-                saveTasks(array_values($tasks));
-                $response = ['success' => true];
+                if (saveTasks(array_values($tasks))) {
+                    $response = ['success' => true];
+                } else {
+                    $response = ['success' => false, 'message' => 'Failed to save after deletion'];
+                }
             } else {
                 $response = ['success' => false, 'message' => 'Task not found'];
             }
@@ -215,7 +364,8 @@ try {
             break;
     }
 } catch (Exception $e) {
-    $response = ['success' => false, 'message' => $e->getMessage()];
+    error_log("API Error: " . $e->getMessage());
+    $response = ['success' => false, 'message' => 'Server error occurred'];
 }
 
 echo json_encode($response);
