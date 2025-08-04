@@ -1,3 +1,33 @@
+// Firebase imports and initialization
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  get,
+  update,
+  remove,
+  onValue,
+  off,
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyCsSYhTAcfBzzOpuhySNaT2hnUG8EPKMHM",
+  authDomain: "task-manager-6175b.firebaseapp.com",
+  databaseURL:
+    "https://task-manager-6175b-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "task-manager-6175b",
+  storageBucket: "task-manager-6175b.firebasestorage.app",
+  messagingSenderId: "639877056545",
+  appId: "1:639877056545:web:24275ae41e44986fb4bb60",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
 // DOM elements
 const tasksList = document.getElementById("tasksList");
 const dayTabs = document.querySelectorAll(".day-tab");
@@ -14,10 +44,7 @@ const updateTaskBtn = document.getElementById("updateTaskBtn");
 
 // Current day filter (default to 'all')
 let currentDay = "all";
-
-// Request queue to prevent concurrent operations
-let requestQueue = [];
-let isProcessingQueue = false;
+let tasksListener = null;
 
 // Initialize the app
 document.addEventListener("DOMContentLoaded", function () {
@@ -25,30 +52,243 @@ document.addEventListener("DOMContentLoaded", function () {
   setupEventListeners();
 });
 
-// Queue management for API requests
-function queueRequest(requestFunction) {
-  return new Promise((resolve, reject) => {
-    requestQueue.push({ fn: requestFunction, resolve, reject });
-    processQueue();
-  });
+// Firebase CRUD Operations
+
+// Create a new task
+async function createTask(taskData) {
+  try {
+    const tasksRef = ref(db, "tasks");
+    const newTaskRef = push(tasksRef);
+
+    // Initialize completion status for each day
+    const completedStatus = {};
+    taskData.days.forEach((day) => {
+      completedStatus[day] = false;
+    });
+
+    const newTask = {
+      id: newTaskRef.key,
+      name: taskData.name,
+      description: taskData.description || "",
+      points: taskData.points,
+      days: taskData.days,
+      priority: taskData.priority,
+      category: taskData.category,
+      completed: completedStatus,
+      timestamp: Date.now(),
+    };
+
+    await set(newTaskRef, newTask);
+    console.log("Task created successfully with ID:", newTaskRef.key);
+    return { success: true, task: newTask };
+  } catch (error) {
+    console.error("Error creating task:", error);
+    return { success: false, message: error.message };
+  }
 }
 
-async function processQueue() {
-  if (isProcessingQueue || requestQueue.length === 0) return;
+// Get all tasks once
+async function getAllTasks() {
+  try {
+    const tasksRef = ref(db, "tasks");
+    const snapshot = await get(tasksRef);
 
-  isProcessingQueue = true;
-
-  while (requestQueue.length > 0) {
-    const { fn, resolve, reject } = requestQueue.shift();
-    try {
-      const result = await fn();
-      resolve(result);
-    } catch (error) {
-      reject(error);
+    if (snapshot.exists()) {
+      const tasksData = snapshot.val();
+      // Convert object to array and add IDs
+      const tasks = Object.keys(tasksData).map((key) => ({
+        ...tasksData[key],
+        id: key,
+      }));
+      return { success: true, tasks: tasks };
+    } else {
+      return { success: true, tasks: [] };
     }
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// Get a single task by ID
+async function getTask(taskId) {
+  try {
+    const taskRef = ref(db, `tasks/${taskId}`);
+    const snapshot = await get(taskRef);
+
+    if (snapshot.exists()) {
+      return { success: true, task: { ...snapshot.val(), id: taskId } };
+    } else {
+      return { success: false, message: "Task not found" };
+    }
+  } catch (error) {
+    console.error("Error fetching task:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// Update a task
+async function updateTask(taskData) {
+  try {
+    const taskRef = ref(db, `tasks/${taskData.id}`);
+
+    // Get current task to preserve completion status for existing days
+    const currentTaskSnapshot = await get(taskRef);
+    if (!currentTaskSnapshot.exists()) {
+      return { success: false, message: "Task not found" };
+    }
+
+    const currentTask = currentTaskSnapshot.val();
+    const newCompleted = {};
+
+    // Preserve completion status for existing days, set false for new days
+    taskData.days.forEach((day) => {
+      if (currentTask.completed && currentTask.completed[day] !== undefined) {
+        newCompleted[day] = currentTask.completed[day];
+      } else {
+        newCompleted[day] = false;
+      }
+    });
+
+    const updatedTask = {
+      name: taskData.name,
+      description: taskData.description || "",
+      points: taskData.points,
+      days: taskData.days,
+      priority: taskData.priority,
+      category: taskData.category,
+      completed: newCompleted,
+      timestamp: currentTask.timestamp || Date.now(),
+    };
+
+    await update(taskRef, updatedTask);
+    console.log("Task updated successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating task:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// Toggle task completion status
+async function toggleTaskCompletion(taskId, day) {
+  try {
+    const taskRef = ref(db, `tasks/${taskId}`);
+    const snapshot = await get(taskRef);
+
+    if (!snapshot.exists()) {
+      return { success: false, message: "Task not found" };
+    }
+
+    const task = snapshot.val();
+    if (task.completed && task.completed[day] !== undefined) {
+      const newStatus = !task.completed[day];
+      await update(ref(db, `tasks/${taskId}/completed`), { [day]: newStatus });
+      console.log(
+        `Task ${taskId} completion status for ${day} updated to ${newStatus}`
+      );
+      return { success: true };
+    } else {
+      return { success: false, message: "Invalid day for this task" };
+    }
+  } catch (error) {
+    console.error("Error toggling task completion:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// Delete a task
+async function deleteTask(taskId) {
+  try {
+    const taskRef = ref(db, `tasks/${taskId}`);
+    await remove(taskRef);
+    console.log("Task deleted successfully");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting task:", error);
+    return { success: false, message: error.message };
+  }
+}
+
+// Listen for real-time updates
+function setupTasksListener() {
+  // Remove existing listener if any
+  if (tasksListener) {
+    off(ref(db, "tasks"), "value", tasksListener);
   }
 
-  isProcessingQueue = false;
+  const tasksRef = ref(db, "tasks");
+  tasksListener = onValue(
+    tasksRef,
+    (snapshot) => {
+      let tasks = [];
+      if (snapshot.exists()) {
+        const tasksData = snapshot.val();
+        tasks = Object.keys(tasksData).map((key) => ({
+          ...tasksData[key],
+          id: key,
+        }));
+      }
+
+      // Filter and render tasks based on current day
+      const filteredTasks = filterTasksByDay(tasks, currentDay);
+      const stats = calculateStats(tasks, currentDay);
+
+      renderTasks(filteredTasks);
+      updateTaskSummary(filteredTasks.length);
+
+      if (currentDay !== "all") {
+        updateStats(stats);
+      }
+    },
+    (error) => {
+      console.error("Error listening to tasks:", error);
+      tasksList.innerHTML =
+        '<div class="empty-message">Error loading tasks</div>';
+      updateTaskSummary(0);
+    }
+  );
+}
+
+// Filter tasks by day
+function filterTasksByDay(tasks, day) {
+  if (day === "all") {
+    return tasks;
+  }
+
+  return tasks.filter((task) => task.days && task.days.includes(day));
+}
+
+// Calculate statistics for a specific day
+function calculateStats(tasks, day) {
+  if (day === "all") {
+    return null;
+  }
+
+  const filteredTasks = filterTasksByDay(tasks, day);
+  const totalTasks = filteredTasks.length;
+  const completedTasks = filteredTasks.filter(
+    (task) => task.completed && task.completed[day]
+  ).length;
+  const pendingTasks = totalTasks - completedTasks;
+
+  const totalPoints = filteredTasks.reduce(
+    (sum, task) => sum + (task.points || 0),
+    0
+  );
+  const completedPoints = filteredTasks
+    .filter((task) => task.completed && task.completed[day])
+    .reduce((sum, task) => sum + (task.points || 0), 0);
+
+  const completionPercentage =
+    totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  return {
+    pending: pendingTasks,
+    completionPercentage: completionPercentage,
+    completedPoints: completedPoints,
+    totalPoints: totalPoints,
+  };
 }
 
 // Set up event listeners
@@ -74,7 +314,8 @@ function setupEventListeners() {
         statsSection.classList.remove("d-none");
       }
 
-      loadTasks();
+      // Trigger re-rendering with current tasks
+      setupTasksListener();
     });
   });
 
@@ -87,65 +328,59 @@ function setupEventListeners() {
   });
 
   // Save new task
-  saveTaskBtn.addEventListener("click", function () {
-    const taskName = document.getElementById("taskName").value?.trim();
-    const taskDescription = document
-      .getElementById("taskDescription")
-      .value?.trim();
+  saveTaskBtn.addEventListener("click", async function () {
+    const taskName = document.getElementById("taskName").value;
+    const taskDescription = document.getElementById("taskDescription").value;
     const taskPriority = document.getElementById("taskPriority").value;
     const selectedDaysValue = document.getElementById("selectedDays").value;
     const selectedDays = selectedDaysValue ? selectedDaysValue.split(",") : [];
     const category = document.getElementById("taskCategory").value;
 
-    // Validation
-    if (!taskName) {
-      showError("Task name is required");
+    if (!taskName || selectedDays.length === 0) {
+      showError("Please fill all required fields");
       return;
     }
-
-    if (selectedDays.length === 0) {
-      showError("Please select at least one day");
-      return;
-    }
-
-    // Disable button to prevent double submission
-    saveTaskBtn.disabled = true;
 
     // Create task data object
     const taskData = {
       name: taskName,
-      description: taskDescription || "",
+      description: taskDescription,
       priority: parseInt(taskPriority),
       days: selectedDays,
       category: category,
       points: calculatePointsFromPriority(parseInt(taskPriority)),
     };
 
-    // Queue the request
-    queueRequest(() => createTask(taskData))
-      .then(() => {
-        showSuccess("Task created successfully");
-        loadTasks();
-        resetCreateForm();
-        bootstrap.Modal.getInstance(
-          document.getElementById("addTaskModal")
-        ).hide();
-      })
-      .catch((error) => {
-        showError("Error creating task: " + error.message);
-      })
-      .finally(() => {
-        saveTaskBtn.disabled = false;
-      });
+    // Create task in Firebase
+    const result = await createTask(taskData);
+
+    if (result.success) {
+      showSuccess("Task created successfully");
+
+      // Reset form and close modal
+      document.getElementById("taskForm").reset();
+      document
+        .querySelectorAll(".day-option")
+        .forEach((opt) => opt.classList.remove("active"));
+      document.getElementById("taskPriority").value = "3";
+      document.getElementById("taskCategory").value = "work";
+      document.getElementById("selectedDays").value = "";
+
+      bootstrap.Modal.getInstance(
+        document.getElementById("addTaskModal")
+      ).hide();
+    } else {
+      showError("Error creating task: " + result.message);
+    }
   });
 
   // Update task
-  updateTaskBtn.addEventListener("click", function () {
-    const taskId = parseInt(document.getElementById("editTaskId").value);
-    const taskName = document.getElementById("editTaskName").value?.trim();
-    const taskDescription = document
-      .getElementById("editTaskDescription")
-      .value?.trim();
+  updateTaskBtn.addEventListener("click", async function () {
+    const taskId = document.getElementById("editTaskId").value;
+    const taskName = document.getElementById("editTaskName").value;
+    const taskDescription = document.getElementById(
+      "editTaskDescription"
+    ).value;
     const taskPriority = document.getElementById("editTaskPriority").value;
     const selectedDaysValue = document.getElementById("editSelectedDays").value;
     const selectedDays = selectedDaysValue ? selectedDaysValue.split(",") : [];
@@ -156,110 +391,29 @@ function setupEventListeners() {
       return;
     }
 
-    updateTaskBtn.disabled = true;
-
     // Create task data object
     const taskData = {
       id: taskId,
       name: taskName,
-      description: taskDescription || "",
+      description: taskDescription,
       priority: parseInt(taskPriority),
       days: selectedDays,
       category: category,
       points: calculatePointsFromPriority(parseInt(taskPriority)),
     };
 
-    queueRequest(() => updateTask(taskData))
-      .then(() => {
-        showSuccess("Task updated successfully");
-        loadTasks();
-        bootstrap.Modal.getInstance(
-          document.getElementById("editTaskModal")
-        ).hide();
-      })
-      .catch((error) => {
-        showError("Error updating task: " + error.message);
-      })
-      .finally(() => {
-        updateTaskBtn.disabled = false;
-      });
-  });
-}
+    // Update task in Firebase
+    const result = await updateTask(taskData);
 
-// API Functions with proper error handling
-function createTask(taskData) {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: "api.php",
-      type: "POST",
-      data: {
-        action: "create",
-        task: JSON.stringify(taskData),
-      },
-      timeout: 10000, // 10 second timeout
-      success: function (response) {
-        if (response && response.success) {
-          resolve(response);
-        } else {
-          reject(new Error(response?.message || "Unknown error occurred"));
-        }
-      },
-      error: function (xhr, status, error) {
-        let errorMessage = "Network error occurred";
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-          errorMessage = xhr.responseJSON.message;
-        } else if (status === "timeout") {
-          errorMessage = "Request timed out";
-        } else if (error) {
-          errorMessage = error;
-        }
-        reject(new Error(errorMessage));
-      },
-    });
+    if (result.success) {
+      showSuccess("Task updated successfully");
+      bootstrap.Modal.getInstance(
+        document.getElementById("editTaskModal")
+      ).hide();
+    } else {
+      showError("Error updating task: " + result.message);
+    }
   });
-}
-
-function updateTask(taskData) {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: "api.php",
-      type: "POST",
-      data: {
-        action: "update",
-        task: JSON.stringify(taskData),
-      },
-      timeout: 10000,
-      success: function (response) {
-        if (response && response.success) {
-          resolve(response);
-        } else {
-          reject(new Error(response?.message || "Unknown error occurred"));
-        }
-      },
-      error: function (xhr, status, error) {
-        let errorMessage = "Network error occurred";
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-          errorMessage = xhr.responseJSON.message;
-        } else if (status === "timeout") {
-          errorMessage = "Request timed out";
-        } else if (error) {
-          errorMessage = error;
-        }
-        reject(new Error(errorMessage));
-      },
-    });
-  });
-}
-
-// Reset create form
-function resetCreateForm() {
-  document.getElementById("taskForm").reset();
-  document
-    .querySelectorAll(".day-option")
-    .forEach((opt) => opt.classList.remove("active"));
-  document.getElementById("taskPriority").value = "3";
-  document.getElementById("taskCategory").value = "work";
-  document.getElementById("selectedDays").value = "";
 }
 
 // Helper functions
@@ -324,59 +478,14 @@ function updateSelectedDays() {
   document.getElementById("selectedDays").value = selected.join(",");
 }
 
-// Load tasks from server with retry logic
-function loadTasks(retryCount = 0) {
-  const maxRetries = 3;
-
-  $.ajax({
-    url: "api.php",
-    type: "GET",
-    data: {
-      action: "get",
-      day: currentDay,
-    },
-    dataType: "json",
-    timeout: 10000,
-    success: function (response) {
-      if (response && response.success) {
-        renderTasks(response.tasks || []);
-        updateTaskSummary((response.tasks || []).length);
-        if (currentDay !== "all" && response.stats) {
-          updateStats(response.stats);
-        }
-      } else {
-        tasksList.innerHTML =
-          '<div class="empty-message">Error loading tasks: ' +
-          (response?.message || "Unknown error") +
-          "</div>";
-        updateTaskSummary(0);
-      }
-    },
-    error: function (xhr, status, error) {
-      if (retryCount < maxRetries) {
-        console.log(`Retrying loadTasks (attempt ${retryCount + 1})`);
-        setTimeout(() => loadTasks(retryCount + 1), 1000 * (retryCount + 1));
-        return;
-      }
-
-      tasksList.innerHTML =
-        '<div class="empty-message">Error loading tasks. Please refresh the page.</div>';
-      updateTaskSummary(0);
-
-      let errorMessage = "Failed to load tasks";
-      if (status === "timeout") {
-        errorMessage += ": Request timed out";
-      } else if (error) {
-        errorMessage += ": " + error;
-      }
-      console.error(errorMessage);
-    },
-  });
+// Load tasks from Firebase
+function loadTasks() {
+  setupTasksListener();
 }
 
-// Render tasks with better error handling
+// Render tasks
 function renderTasks(tasks) {
-  if (!Array.isArray(tasks) || tasks.length === 0) {
+  if (!tasks || tasks.length === 0) {
     tasksList.innerHTML = '<div class="empty-message">No tasks found</div>';
     return;
   }
@@ -384,45 +493,39 @@ function renderTasks(tasks) {
   let html = "";
 
   tasks.forEach((task) => {
-    // Validate task structure
-    if (!task || !task.id || !task.name) {
-      console.warn("Invalid task structure:", task);
-      return;
-    }
-
     const isCompleted =
       currentDay !== "all" && task.completed && task.completed[currentDay];
 
     html += `
-      <div class="list-group-item task-item mt-3 d-flex justify-content-between align-items-center border ${
+      <div class="list-group-item task-item m-1 d-flex justify-content-between align-items-center border ${
         isCompleted ? "task-completed" : ""
       }">
         <div>
           <div class="mb-2" style="${
             isCompleted ? "text-decoration: line-through; color: #6c757d;" : ""
           }">
-            <p class="mb-0" style="font-size: 1.2rem;">${escapeHtml(
-              task.name
-            )}</p>
+            <p class="mb-0" style="font-size: 1.2rem;">${task.name}</p>
           </div>
 
           <div class="d-flex align-items-center gap-2 mb-2">
-            ${getPriorityBadge(task.priority || 3)}
-            ${getCategoryBadge(task.category || "work")}
+            ${getPriorityBadge(task.priority)}
+            ${getCategoryBadge(task.category)}
     `;
 
-    if (currentDay === "all" && task.days && Array.isArray(task.days)) {
+    if (currentDay === "all") {
       html += `<div class="ms-2 d-flex gap-1">`;
-      task.days.forEach((day) => {
-        const dayCompleted = task.completed?.[day] || false;
-        html += `
-          <span class="badge day-badge ${
-            dayCompleted ? "bg-success" : "bg-light text-dark"
-          }">
-            ${day.substring(0, 3)}
-          </span>
-        `;
-      });
+      if (task.days) {
+        task.days.forEach((day) => {
+          const dayCompleted = task.completed?.[day] || false;
+          html += `
+            <span class="badge day-badge ${
+              dayCompleted ? "bg-success" : "bg-light text-dark"
+            }">
+              ${day.substring(0, 3)}
+            </span>
+          `;
+        });
+      }
       html += `</div>`;
     }
 
@@ -430,19 +533,12 @@ function renderTasks(tasks) {
 
     // Description button (day-specific views only)
     if (currentDay !== "all") {
+      // Show description button only if task has a description
       if (task.description?.trim()) {
         html += `
-          <button class="btn btn-sm btn-outline-primary description-btn has-description" onclick="showDescription('${escapeHtml(
-            task.description
-          )}')" title="View Description">
+          <a href="${task.description}" target="_blank" class="btn btn-sm btn-outline-secondary description-btn" title="View Description">
             <i class="fas fa-eye"></i>
-          </button>
-        `;
-      } else {
-        html += `
-          <button class="btn btn-sm btn-outline-secondary description-btn" title="No Description" disabled>
-            <i class="fas fa-eye"></i>
-          </button>
+          </a>
         `;
       }
 
@@ -451,7 +547,7 @@ function renderTasks(tasks) {
         <button class="btn btn-sm ${
           isCompleted ? "btn-outline-secondary" : "btn-outline-success"
         }"
-                onclick="toggleTaskComplete(${task.id})"
+                onclick="toggleTaskComplete('${task.id}')"
                 title="${isCompleted ? "Mark Incomplete" : "Mark Complete"}">
           <i class="fas ${isCompleted ? "fa-undo" : "fa-check"}"></i>
         </button>
@@ -459,10 +555,10 @@ function renderTasks(tasks) {
     } else {
       // Edit & Delete (all tasks view only)
       html += `
-        <button class="btn btn-sm btn-outline-primary" onclick="openEditModal(${task.id})" title="Edit">
+        <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${task.id}')" title="Edit">
           <i class="fas fa-edit"></i>
         </button>
-        <button class="btn btn-sm btn-outline-danger" onclick="deleteTask(${task.id})" title="Delete">
+        <button class="btn btn-sm btn-outline-danger" onclick="deleteTaskById('${task.id}')" title="Delete">
           <i class="fas fa-trash"></i>
         </button>
       `;
@@ -476,7 +572,7 @@ function renderTasks(tasks) {
 
 // Utility to capitalize first letter
 function capitalize(str) {
-  return str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // Show description in modal
@@ -490,7 +586,6 @@ function showDescription(description) {
 
 // Helper function to escape HTML
 function escapeHtml(unsafe) {
-  if (!unsafe) return "";
   return unsafe
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -502,11 +597,9 @@ function escapeHtml(unsafe) {
 // Update statistics for day view
 function updateStats(stats) {
   if (stats) {
-    pendingTasksStat.textContent = stats.pending || 0;
-    completionPercent.textContent = `${stats.completionPercentage || 0}%`;
-    pointsDisplay.textContent = `${stats.completedPoints || 0}/${
-      stats.totalPoints || 0
-    }`;
+    pendingTasksStat.textContent = stats.pending;
+    completionPercent.textContent = `${stats.completionPercentage}%`;
+    pointsDisplay.textContent = `${stats.completedPoints}/${stats.totalPoints}`;
   }
 }
 
@@ -520,190 +613,76 @@ function updateTaskSummary(count) {
 }
 
 // Toggle task completion status for specific day
-function toggleTaskComplete(taskId) {
-  if (!taskId || currentDay === "all") return;
-
-  queueRequest(() => toggleTask(taskId, currentDay))
-    .then(() => {
-      loadTasks();
-    })
-    .catch((error) => {
-      console.error("Error updating task:", error);
-      showError("Failed to update task status");
-    });
+async function toggleTaskComplete(taskId) {
+  const result = await toggleTaskCompletion(taskId, currentDay);
+  if (!result.success) {
+    console.error("Error updating task: " + result.message);
+    showError("Error updating task: " + result.message);
+  }
 }
 
-function toggleTask(taskId, day) {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: "api.php",
-      type: "POST",
-      data: {
-        action: "toggle",
-        id: taskId,
-        day: day,
-      },
-      timeout: 10000,
-      success: function (response) {
-        if (response && response.success) {
-          resolve(response);
-        } else {
-          reject(new Error(response?.message || "Failed to toggle task"));
-        }
-      },
-      error: function (xhr, status, error) {
-        let errorMessage = "Network error occurred";
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-          errorMessage = xhr.responseJSON.message;
-        } else if (status === "timeout") {
-          errorMessage = "Request timed out";
-        } else if (error) {
-          errorMessage = error;
-        }
-        reject(new Error(errorMessage));
-      },
-    });
-  });
-}
-
-// Delete task with improved error handling
-function deleteTask(taskId) {
-  if (!taskId) return;
-
-  confirmAction("This will permanently delete the task.").then((result) => {
-    if (result.isConfirmed) {
-      queueRequest(() => removeTask(taskId))
-        .then(() => {
-          showSuccess("Task deleted successfully");
-          loadTasks();
-        })
-        .catch((error) => {
-          showError("Error deleting task: " + error.message);
-        });
+// Delete task
+async function deleteTaskById(taskId) {
+  const result = await confirmAction("This will permanently delete the task.");
+  if (result.isConfirmed) {
+    const deleteResult = await deleteTask(taskId);
+    if (deleteResult.success) {
+      showSuccess("Task deleted successfully");
+    } else {
+      showError("Error deleting task: " + deleteResult.message);
     }
-  });
-}
-
-function removeTask(taskId) {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: "api.php",
-      type: "POST",
-      data: {
-        action: "delete",
-        id: taskId,
-      },
-      timeout: 10000,
-      success: function (response) {
-        if (response && response.success) {
-          resolve(response);
-        } else {
-          reject(new Error(response?.message || "Failed to delete task"));
-        }
-      },
-      error: function (xhr, status, error) {
-        let errorMessage = "Network error occurred";
-        if (xhr.responseJSON && xhr.responseJSON.message) {
-          errorMessage = xhr.responseJSON.message;
-        } else if (status === "timeout") {
-          errorMessage = "Request timed out";
-        } else if (error) {
-          errorMessage = error;
-        }
-        reject(new Error(errorMessage));
-      },
-    });
-  });
+  }
 }
 
 // Open edit modal with task data
-function openEditModal(taskId) {
-  if (!taskId) return;
+async function openEditModal(taskId) {
+  const result = await getTask(taskId);
+  if (result.success) {
+    const task = result.task;
 
-  // Fetch task details
-  $.ajax({
-    url: "api.php",
-    type: "GET",
-    data: {
-      action: "get_task",
-      id: taskId,
-    },
-    timeout: 10000,
-    success: function (response) {
-      if (response && response.success && response.task) {
-        const task = response.task;
+    // Populate form fields
+    document.getElementById("editTaskId").value = task.id;
+    document.getElementById("editTaskName").value = task.name;
+    document.getElementById("editTaskDescription").value =
+      task.description || "";
+    document.getElementById("editTaskPriority").value = task.priority;
+    document.getElementById("editTaskCategory").value = task.category;
 
-        // Populate form fields
-        document.getElementById("editTaskId").value = task.id || "";
-        document.getElementById("editTaskName").value = task.name || "";
-        document.getElementById("editTaskDescription").value =
-          task.description || "";
-        document.getElementById("editTaskPriority").value = task.priority || 3;
-        document.getElementById("editTaskCategory").value =
-          task.category || "work";
-
-        // Set days
-        document.querySelectorAll(".edit-day-option").forEach((opt) => {
-          opt.classList.remove("active");
-          if (
-            task.days &&
-            Array.isArray(task.days) &&
-            task.days.includes(opt.getAttribute("data-day"))
-          ) {
-            opt.classList.add("active");
-          }
-        });
-
-        document.getElementById("editSelectedDays").value = (
-          task.days || []
-        ).join(",");
-
-        // Set up day selection event listeners (remove old listeners first)
-        document.querySelectorAll(".edit-day-option").forEach((option) => {
-          // Remove existing listeners
-          option.removeEventListener("click", editDayClickHandler);
-          // Add new listener
-          option.addEventListener("click", editDayClickHandler);
-        });
-
-        // Show modal
-        const editModal = new bootstrap.Modal(
-          document.getElementById("editTaskModal")
-        );
-        editModal.show();
-      } else {
-        showError(
-          "Error loading task: " + (response?.message || "Task not found")
-        );
+    // Set days
+    document.querySelectorAll(".edit-day-option").forEach((opt) => {
+      opt.classList.remove("active");
+      if (task.days && task.days.includes(opt.getAttribute("data-day"))) {
+        opt.classList.add("active");
       }
-    },
-    error: function (xhr, status, error) {
-      let errorMessage = "Error loading task";
-      if (xhr.responseJSON && xhr.responseJSON.message) {
-        errorMessage += ": " + xhr.responseJSON.message;
-      } else if (status === "timeout") {
-        errorMessage += ": Request timed out";
-      } else if (error) {
-        errorMessage += ": " + error;
-      }
-      showError(errorMessage);
-    },
-  });
+    });
+
+    document.getElementById("editSelectedDays").value = task.days
+      ? task.days.join(",")
+      : "";
+
+    // Set up day selection event listeners
+    document.querySelectorAll(".edit-day-option").forEach((option) => {
+      option.addEventListener("click", function () {
+        this.classList.toggle("active");
+        const selected = Array.from(
+          document.querySelectorAll(".edit-day-option.active")
+        ).map((opt) => opt.getAttribute("data-day"));
+        document.getElementById("editSelectedDays").value = selected.join(",");
+      });
+    });
+
+    // Show modal
+    const editModal = new bootstrap.Modal(
+      document.getElementById("editTaskModal")
+    );
+    editModal.show();
+  } else {
+    showError("Error loading task: " + result.message);
+  }
 }
 
-// Separate handler for edit day selection to avoid memory leaks
-function editDayClickHandler() {
-  this.classList.toggle("active");
-  const selected = Array.from(
-    document.querySelectorAll(".edit-day-option.active")
-  ).map((opt) => opt.getAttribute("data-day"));
-  document.getElementById("editSelectedDays").value = selected.join(",");
-}
-
-// SweetAlert helpers with better error handling
+// SweetAlert helpers
 function showError(message) {
-  if (!message) message = "An unknown error occurred";
-
   Swal.fire({
     icon: "error",
     title: "Error",
@@ -715,8 +694,6 @@ function showError(message) {
 }
 
 function showSuccess(message) {
-  if (!message) message = "Operation completed successfully";
-
   Swal.fire({
     icon: "success",
     title: "Success",
@@ -732,10 +709,10 @@ function showSuccess(message) {
 function confirmAction(message) {
   return Swal.fire({
     title: "Are you sure?",
-    text: message || "This action cannot be undone.",
+    text: message,
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#6c5ce7",
+    confirmButtonColor: "#1967d2",
     cancelButtonColor: "#495057",
     confirmButtonText: "Yes, proceed",
     background: "#252525",
@@ -743,35 +720,43 @@ function confirmAction(message) {
   });
 }
 
-// Add error recovery mechanisms
-window.addEventListener("error", function (e) {
-  console.error("JavaScript error:", e.error);
-  // Could implement error reporting here
-});
+// Make functions globally available for onclick handlers
+window.showDescription = showDescription;
+window.toggleTaskComplete = toggleTaskComplete;
+window.deleteTaskById = deleteTaskById;
+window.openEditModal = openEditModal;
 
-window.addEventListener("unhandledrejection", function (e) {
-  console.error("Unhandled promise rejection:", e.reason);
-  // Could implement error reporting here
-});
+// *************** Mobile sidebar toggle
+const sidebarToggle = document.getElementById("sidebarToggle");
+const sidebar = document.querySelector(".sidebar");
 
-// Periodic data integrity check (optional)
-function verifyDataIntegrity() {
-  $.ajax({
-    url: "api.php",
-    type: "GET",
-    data: { action: "get", day: "all" },
-    timeout: 5000,
-    success: function (response) {
-      if (!response || !response.success) {
-        console.warn("Data integrity check failed");
-        // Could trigger a data recovery process here
-      }
-    },
-    error: function () {
-      console.warn("Data integrity check failed - network error");
-    },
+if (sidebarToggle && sidebar) {
+  sidebarToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("show");
   });
 }
 
-// Run integrity check every 5 minutes (optional - uncomment if needed)
-// setInterval(verifyDataIntegrity, 300000);
+// Close sidebar when clicking outside on mobile
+document.addEventListener("click", (e) => {
+  if (window.innerWidth <= 992) {
+    if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) {
+      sidebar.classList.remove("show");
+    }
+  }
+});
+
+// Show/hide toggle button based on screen size
+function handleSidebarToggleVisibility() {
+  if (window.innerWidth <= 992) {
+    sidebarToggle.classList.remove("d-none");
+  } else {
+    sidebarToggle.classList.add("d-none");
+    sidebar.classList.remove("show");
+  }
+}
+
+// Initial check
+handleSidebarToggleVisibility();
+
+// Add resize listener
+window.addEventListener("resize", handleSidebarToggleVisibility);

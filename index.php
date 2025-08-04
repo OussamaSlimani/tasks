@@ -1,21 +1,9 @@
-<?php
-// Start session and initialize tasks if not exists
-session_start();
-
-// Path to our JSON file
-$jsonFile = 'tasks.json';
-
-// Create tasks.json if it doesn't exist
-if (!file_exists($jsonFile)) {
-    file_put_contents($jsonFile, json_encode([]));
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Task Manager</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -31,60 +19,74 @@ if (!file_exists($jsonFile)) {
     <div class="container-fluid g-0">
         <div class="row flex-nowrap">
             <!-- Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-0 bg-dark">
-                <div class="d-flex flex-column p-3 h-100">
-                    <div class="sidebar-header mb-4">
-                        <h4 class="text-center mb-3">
-                           Task Manager
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 sidebar">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 min-vh-100">
+                    <div class="sidebar-header w-100 text-center mb-4">
+                        <h4 class="m-2">
+                            Task Manager
                         </h4>
+                        <hr class="sidebar-divider">
                     </div>
-                    <ul class="nav nav-pills flex-column mb-auto">
-                        <li class="nav-item day-tab active" id="manageTasksTab">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-list-check me-2"></i>
-                                <span>All Tasks</span>
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100" id="sidebar-menu">
+                        <li class="nav-item day-tab w-100 active" id="manageTasksTab">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-list-check me-3"></i>
+                                <span class="ms-1">All Tasks</span>
                             </a>
                         </li>
-                        <li class="nav-item day-tab" data-day="monday">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-calendar-day me-2"></i>
-                                <span>Monday</span>
+                        <li class="nav-item w-100">
+                            <a href="statistics.html" target="_blank" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-chart-line me-3"></i>
+                                <span class="ms-1">Statistics</span>
                             </a>
                         </li>
-                        <li class="nav-item day-tab" data-day="tuesday">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-calendar-day me-2"></i>
-                                <span>Tuesday</span>
+                        <li class="nav-item w-100">
+                            <a href="pomo/index.html" target="_blank" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-stopwatch me-3"></i>
+                                <span class="ms-1">Pomodoro</span>
                             </a>
                         </li>
-                        <li class="nav-item day-tab" data-day="wednesday">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-calendar-day me-2"></i>
-                                <span>Wednesday</span>
+                        <li class="sidebar-divider my-2"></li>
+                        <li class="nav-item day-tab w-100" data-day="monday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Monday</span>
                             </a>
                         </li>
-                        <li class="nav-item day-tab" data-day="thursday">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-calendar-day me-2"></i>
-                                <span>Thursday</span>
+                        <li class="nav-item day-tab w-100" data-day="tuesday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Tuesday</span>
                             </a>
                         </li>
-                        <li class="nav-item day-tab" data-day="friday">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-calendar-day me-2"></i>
-                                <span>Friday</span>
+                        <li class="nav-item day-tab w-100" data-day="wednesday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Wednesday</span>
                             </a>
                         </li>
-                        <li class="nav-item day-tab" data-day="saturday">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-calendar-day me-2"></i>
-                                <span>Saturday</span>
+                        <li class="nav-item day-tab w-100" data-day="thursday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Thursday</span>
                             </a>
                         </li>
-                        <li class="nav-item day-tab" data-day="sunday">
-                            <a href="#" class="nav-link d-flex align-items-center">
-                                <i class="fas fa-calendar-day me-2"></i>
-                                <span>Sunday</span>
+                        <li class="nav-item day-tab w-100" data-day="friday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Friday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item day-tab w-100" data-day="saturday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Saturday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item day-tab w-100" data-day="sunday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Sunday</span>
                             </a>
                         </li>
                     </ul>
@@ -92,29 +94,32 @@ if (!file_exists($jsonFile)) {
             </div>
 
             <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4 main-content">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 id="currentDayTitle" class="mb-0">
-                            <span id="dayGreeting"></span> All Tasks
-                        </h2>
-                        <small class="text-muted" id="taskSummary">Loading tasks...</small>
+            <div class="col py-3 main-content">
+                <!-- Top Navigation Bar -->
+                <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+                    <div class="container-fluid">
+                        <button class="btn btn-primary sidebar-toggle d-lg-none me-2" id="sidebarToggle">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <div class="d-flex flex-column">
+                            <h2 class="mb-0" id="currentDayTitle">
+                                <span id="dayGreeting"></span> All Tasks
+                            </h2>
+                            <small class="text-muted" id="taskSummary">Loading tasks...</small>
+                        </div>
+                        <button class="btn btn-primary ms-auto" id="createTaskBtn" data-bs-toggle="modal"
+                            data-bs-target="#addTaskModal">
+                            <i class="fas fa-plus me-2"></i>Create Task
+                        </button>
                     </div>
-                    <button class="btn btn-primary" id="createTaskBtn" data-bs-toggle="modal"
-                        data-bs-target="#addTaskModal">
-                        <i class="fas fa-plus me-2"></i>Create Task
-                    </button>
-                </div>
+                </nav>
 
                 <!-- Stats Section -->
-                <div class="row justify-content-center mb-4 d-none" id="statsSection">
+                <div class="row justify-content-center m-1 d-none" id="statsSection">
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100 bg-dark-gradient">
                             <div class="card-body text-center">
-                                <div class="stat-icon mb-3">
-                                    <i class="fas fa-clock text-warning"></i>
-                                </div>
-                                <h5 class="card-title">Pending Tasks</h5>
+                                
                                 <p class="display-6 mb-0" id="pendingTasksStat">0</p>
                                 <small class="text-muted">Tasks remaining</small>
                             </div>
@@ -123,10 +128,7 @@ if (!file_exists($jsonFile)) {
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100 bg-dark-gradient">
                             <div class="card-body text-center">
-                                <div class="stat-icon mb-3">
-                                    <i class="fas fa-percent text-info"></i>
-                                </div>
-                                <h5 class="card-title">Completion Rate</h5>
+                                
                                 <p class="display-6 mb-0" id="completionPercent">0%</p>
                                 <small class="text-muted">of daily goals</small>
                             </div>
@@ -135,10 +137,7 @@ if (!file_exists($jsonFile)) {
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100 bg-dark-gradient">
                             <div class="card-body text-center">
-                                <div class="stat-icon mb-3">
-                                    <i class="fas fa-star text-success"></i>
-                                </div>
-                                <h5 class="card-title">Points Earned</h5>
+                                
                                 <p class="display-6 mb-0" id="pointsDisplay">0/0</p>
                                 <small class="text-muted">points today</small>
                             </div>
@@ -147,7 +146,7 @@ if (!file_exists($jsonFile)) {
                 </div>
 
                 <!-- Tasks List -->
-                <div class="list-group" id="tasksList">
+                <div class="list-group px-3" id="tasksList">
                     <div class="text-center py-4">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>
@@ -193,8 +192,10 @@ if (!file_exists($jsonFile)) {
                             <div class="col-md-4">
                                 <label for="taskCategory" class="form-label">Category</label>
                                 <select class="form-select" id="taskCategory" required>
-                                    <option value="work" selected>Work</option>
-                                    <option value="personal">Personal</option>
+                                    <option value="religious">Religious</option>
+                                    <option value="learn">Learn</option>
+                                    <option value="health">Health</option>
+                                    <option value="work">Work</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
@@ -257,9 +258,11 @@ if (!file_exists($jsonFile)) {
                             </div>
                             <div class="col-md-4">
                                 <label for="editTaskCategory" class="form-label">Category</label>
-                                <select class="form-select" id="editTaskCategory" required>
+                               <select class="form-select" id="editTaskCategory" required>
+                                    <option value="religious">Religious</option>
+                                    <option value="learn">Learn</option>
+                                    <option value="health">Health</option>
                                     <option value="work">Work</option>
-                                    <option value="personal">Personal</option>
                                     <option value="other">Other</option>
                                 </select>
                             </div>
@@ -288,24 +291,6 @@ if (!file_exists($jsonFile)) {
         </div>
     </div>
 
-    <!-- Description View Modal -->
-    <div class="modal fade" id="descriptionModal" tabindex="-1" aria-labelledby="descriptionModalLabel" aria-hidden="true">
-        <div class="modal-dialog  modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="descriptionModalLabel">Task Description</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <p id="descriptionContent"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery for AJAX -->
@@ -313,6 +298,6 @@ if (!file_exists($jsonFile)) {
     <!-- sweetalert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom JS -->
-    <script src="js/script.js"></script>
+    <script type="module" src="js/script.js"></script>
 </body>
 </html>

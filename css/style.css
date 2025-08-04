@@ -1,25 +1,33 @@
 :root {
-  --primary-color: #333;
-  --secondary-color: #a29bfe;
+  --primary-color: #1967d2;
+  --primary-hover: #1456b5;
+  --secondary-color: #3f81dc;
   --success-color: #00b894;
   --info-color: #0984e3;
   --warning-color: #fdcb6e;
   --danger-color: #d63031;
   --dark-color: #2d3436;
   --light-color: #f5f6fa;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 80px;
 }
 
 body {
   font-family: "Poppins", sans-serif;
   background-color: #1a1a1a;
   color: #e0e0e0;
+  overflow-x: hidden;
 }
 
+/* Sidebar Styles */
 .sidebar {
+  width: var(--sidebar-width);
   height: 100vh;
   background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
   border-right: 1px solid #333;
-  transition: all 0.3s;
+  position: fixed;
+  transition: all 0.3s ease;
+  z-index: 1000;
 }
 
 .sidebar-header {
@@ -27,15 +35,22 @@ body {
   border-bottom: 1px solid #333;
 }
 
+.sidebar-divider {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0.5rem 0;
+  width: 100%;
+}
+
 .sidebar .nav-link {
   border-radius: 0.5rem;
   margin: 0.25rem 0;
   transition: all 0.2s;
   color: #b0b0b0;
+  white-space: nowrap;
 }
 
 .sidebar .nav-link:hover {
-  background-color: rgba(108, 92, 231, 0.1);
+  background-color: rgba(25, 103, 210, 0.2);
   color: var(--light-color);
 }
 
@@ -46,113 +61,63 @@ body {
 }
 
 .sidebar .nav-link i {
-  width: 20px;
+  width: 24px;
   text-align: center;
+  transition: all 0.3s;
 }
 
+/* Main Content Styles */
 .main-content {
-  background-color: #121212;
+  margin-left: var(--sidebar-width);
+  transition: all 0.3s ease;
   min-height: 100vh;
 }
 
+/* Navbar Styles */
+.navbar {
+  background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
+  border-bottom: 1px solid #333;
+  padding: 0.75rem 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Card Styles */
 .card {
   border: none;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  background-color: #252525;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-}
-
-.bg-dark-gradient {
-  background: linear-gradient(135deg, #252525 0%, #1a1a1a 100%);
+.stat-card {
+  border-left: 4px solid var(--primary-color);
 }
 
 .stat-icon {
-  font-size: 2rem;
+  font-size: 1.5rem;
   opacity: 0.8;
 }
 
-.task-item {
-  border-radius: 0.75rem !important;
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+/* Task List Styles */
+.list-group-item {
   background-color: #252525;
-  border: 1px solid #333 !important;
+  border: 1px solid #333;
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem !important;
   transition: all 0.2s;
 }
 
-.task-item:hover {
+.list-group-item:hover {
   background-color: #2d2d2d;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.day-badge {
-  border-radius: 0.5rem;
-  font-size: 0.7rem;
-  padding: 0.25rem 0.5rem;
-}
-
-.empty-message {
-  padding: 2rem;
-  text-align: center;
-  color: #777;
-}
-
-.btn-primary {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.btn-primary:hover {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-}
-
-.modal-content {
-  background-color: #252525;
-  border: 1px solid #333;
-}
-
-.day-option.active,
-.edit-day-option.active {
-  background-color: var(--primary-color) !important;
-  color: white !important;
-}
-
-/* Priority badges */
-.badge.bg-critical {
-  background-color: var(--danger-color);
-}
-
-.badge.bg-high {
-  background-color: #e17055;
-}
-
-.badge.bg-medium {
-  background-color: var(--warning-color);
-  color: #333;
-}
-
-.badge.bg-low {
-  background-color: var(--info-color);
-}
-
-.badge.bg-minimal {
-  background-color: var(--secondary-color);
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 100%;
-    height: auto;
-    position: relative;
-  }
-
-  .main-content {
-    margin-left: 0;
-  }
+  border-color: #444;
 }
 
 .task-completed {
@@ -160,25 +125,7 @@ body {
   border-left: 4px solid var(--success-color) !important;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #252525;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #444;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-/* Add these new styles */
+/* Badge Styles */
 .badge {
   font-weight: 500;
   letter-spacing: 0.5px;
@@ -222,62 +169,290 @@ body {
   color: #2f3542;
 }
 
-/* Category badges */
-.badge.bg-work {
-  background-color: #5352ed;
-  color: white;
+/* Button Styles */
+.btn-primary {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  transition: all 0.3s;
 }
 
-.badge.bg-personal {
-  background-color: #ff7f50;
-  color: white;
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
 }
 
-.badge.bg-other {
-  background-color: #747d8c;
-  color: white;
+.btn-outline-primary {
+  transition: all 0.3s;
 }
 
-/* Day badges */
-.day-badge {
-  border-radius: 0.5rem;
-  font-size: 0.7rem;
-  padding: 0.35rem 0.5rem;
-  border: 1px solid transparent;
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
 }
 
-.day-badge.bg-light {
-  border-color: #dee2e6;
+.day-option.active,
+.edit-day-option.active {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+  border-color: var(--primary-color) !important;
 }
 
-/* Button hover effect */
-.btn-hover-glow {
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+/* Modal Styles */
+.modal-content {
+  background-color: #252525;
+  border: 1px solid #333;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-.btn-hover-glow:hover {
-  box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
-  transform: translateY(-2px);
+.modal-header {
+  border-bottom: 1px solid #333;
 }
 
-/* SweetAlert customization */
-.swal2-popup {
-  background-color: #252525 !important;
-  border: 1px solid #333 !important;
-  color: #e0e0e0 !important;
-  border-radius: 0.75rem !important;
+.modal-footer {
+  border-top: 1px solid #333;
 }
 
-.swal2-title {
-  color: #f8f9fa !important;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-.swal2-confirm {
-  background-color: #6c5ce7 !important;
+::-webkit-scrollbar-track {
+  background: #252525;
 }
 
-.swal2-cancel {
-  background-color: #495057 !important;
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .sidebar {
+    transform: translateX(-100%);
+    z-index: 1050;
+  }
+
+  .sidebar.show {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    margin-left: 0;
+    width: 100%;
+  }
+
+  .sidebar-toggle {
+    display: block !important;
+  }
+
+  /* Collapsed sidebar for medium screens */
+  .sidebar-collapsed .sidebar {
+    width: var(--sidebar-collapsed-width);
+  }
+
+  .sidebar-collapsed .sidebar .nav-link span {
+    display: none;
+  }
+
+  .sidebar-collapsed .sidebar .nav-link i {
+    margin-right: 0;
+  }
+
+  .sidebar-collapsed .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Adjust modal sizes */
+  .modal-dialog {
+    margin: 0.5rem auto;
+    max-width: 95%;
+  }
+
+  /* Stack stats cards */
+  .stat-card {
+    margin-bottom: 1rem;
+  }
+
+  /* Adjust task item layout */
+  .task-actions {
+    margin-top: 10px;
+  }
+
+  /* Make day buttons smaller */
+  .day-option,
+  .edit-day-option {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Adjust header layout */
+  .navbar {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0.75rem;
+  }
+
+  #createTaskBtn {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+
+  /* Task list improvements */
+  .list-group-item {
+    padding: 0.75rem;
+  }
+
+  .task-title {
+    font-size: 1rem;
+  }
+
+  .task-priority {
+    font-size: 0.7rem;
+  }
+
+  /* Stats section */
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+}
+
+/* Animation for sidebar toggle */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.sidebar-show {
+  animation: slideIn 0.3s forwards;
+}
+
+.sidebar-hide {
+  animation: slideOut 0.3s forwards;
+}
+
+/* Loading spinner */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #777;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Transition effects */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  /* Improved task item layout for small screens */
+  .task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  /* Better spacing for task content */
+  .task-item > div:first-child {
+    width: 100%;
+    margin-bottom: 0.75rem;
+  }
+
+  /* Make task name wrap properly */
+  .task-item p {
+    white-space: normal;
+    word-break: break-word;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Stack badges vertically on small screens */
+  .task-item .d-flex.align-items-center.gap-2 {
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+
+  /* Full width for action buttons on small screens */
+  .task-item > div:last-child {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Adjust badge sizes */
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.3em 0.6em;
+  }
+
+  /* Make day badges smaller in all tasks view */
+  .day-badge {
+    font-size: 0.6rem;
+    padding: 0.2em 0.4em;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Even more compact layout for very small screens */
+  .task-item {
+    padding: 0.75rem;
+  }
+
+  /* Smaller font size for task name */
+  .task-item p {
+    font-size: 1rem;
+  }
+
+  /* Compact buttons */
+  .task-item .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
 }

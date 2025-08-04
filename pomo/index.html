@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pomodoro</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="d-flex flex-column justify-content-center align-items-center text-white p-3">
+    
+    <!-- Fullscreen Button -->
+    <button id="fullscreenBtn" class="btn fullscreen-button text-white position-fixed top-0 end-0 m-3" title="Toggle Fullscreen">
+        <i class="fas fa-expand"></i>
+    </button>
+    
+    <!-- Session Info -->
+    <h3 class="session-info mb-3 text-center" id="sessionInfo">Work Session 1</h3>
+    
+    <!-- Timer Display -->
+    <div class="timer-container rounded-4 shadow p-2 p-md-5 mb-4 w-100" style="max-width: 500px;">
+        <div class="timer-display display-1 fw-light" id="timer">25:00</div>
+    </div>
+    
+    <!-- Control Buttons -->
+    <div class="controls d-flex justify-content-center gap-3">
+        <button id="startPauseBtn" class="btn work-button text-white fw-medium px-4 py-2 rounded-pill">
+            <i class="fas fa-play me-2"></i> Start
+        </button>
+        <button id="resetBtn" class="btn work-button text-white fw-medium px-4 py-2 rounded-pill">
+            <i class="fas fa-rotate-left me-2"></i> Reset
+        </button>
+    </div>
+    
+    <!-- Stats -->
+    <div class="stats text-center mt-4 text-white-50 small" id="stats"></div>
+
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom Script -->
+    <script src="script.js"></script>
+</body>
+
+</html>

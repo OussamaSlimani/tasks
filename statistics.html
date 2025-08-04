@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Task Manager - Statistics</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body data-bs-theme="dark">
+    <div class="container-fluid g-0">
+        <div class="row flex-wrap m-2 m-md-4 p-2 p-md-4">
+            <!-- Main Content -->
+            <div class="col-lg-12 ms-sm-auto px-md-4 py-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="mb-0">
+                            Task Statistics
+                        </h2>
+                        <small class="text-muted">Overview of your task performance</small>
+                    </div>
+                </div>
+
+                <!-- Points Overview -->
+                <div class="card mb-4 bg-dark-gradient">
+                    <div class="card-header">
+                        <h5 class="mb-0">Points Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="pointsChart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Task Distribution -->
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark-gradient">
+                            <div class="card-header">
+                                <h5 class="mb-0">Task Distribution by Day</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="tasksByDayChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100 bg-dark-gradient">
+                            <div class="card-header">
+                                <h5 class="mb-0">Task Distribution by Category</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="tasksByCategoryChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Completion Chart -->
+                <div class="card mb-4 bg-dark-gradient">
+                    <div class="card-header">
+                        <h5 class="mb-0">Weekly Completion</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="weeklyCompletionChart" height="300"></canvas>
+                    </div>
+                </div>
+
+                <!-- Completion Rate -->
+                <div class="card mb-4 bg-dark-gradient">
+                    <div class="card-header">
+                        <h5 class="mb-0">Completion Rate by Priority</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="priorityCompletionChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery for AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- sweetalert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Custom JS -->
+    <script type="module" src="js/statistics.js"></script>
+</body>
+
+</html>
