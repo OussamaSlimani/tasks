@@ -1,52 +1,34 @@
 [
     {
         "id": 1,
-        "name": "No phone use for one hour after waking up",
+        "name": "woooooooooow",
         "description": "",
         "points": 10,
         "days": [
-            "monday",
-            "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "saturday",
-            "sunday"
+            "thursday"
         ],
         "priority": 3,
         "category": "work",
         "completed": {
-            "monday": false,
-            "tuesday": false,
-            "wednesday": false,
-            "thursday": false,
-            "friday": false,
-            "saturday": false,
-            "sunday": false
+            "thursday": true
         }
     },
     {
         "id": 2,
-        "name": "Drink 2L+ water, eat well, sleep 6+ hours, and follow daily routine.",
+        "name": "sdqqqqqqqqqqq",
         "description": "",
         "points": 15,
         "days": [
             "monday",
             "tuesday",
-            "wednesday",
-            "thursday",
-            "friday",
-            "sunday"
+            "wednesday"
         ],
         "priority": 2,
-        "category": "personal",
+        "category": "work",
         "completed": {
-            "monday": false,
+            "monday": true,
             "tuesday": false,
-            "wednesday": false,
-            "thursday": false,
-            "friday": false,
-            "sunday": false
+            "wednesday": false
         }
     }
 ]
