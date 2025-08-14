@@ -21,14 +21,6 @@ body {
   overflow-x: hidden;
 }
 
-.text-primary {
-  color: var(--primary-color) !important;
-}
-
-.spinner-border {
-  transition: color 0.3s ease;
-}
-
 /* Sidebar Styles */
 .sidebar {
   width: var(--sidebar-width);
@@ -102,8 +94,30 @@ body {
   transition: transform 0.2s;
 }
 
-.bg-dark-gradient {
-  background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
+.stat-card {
+  border-left: 4px solid var(--primary-color);
+}
+
+.stat-icon {
+  font-size: 1.5rem;
+  opacity: 0.8;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 576px) {
+  #statsSection .display-6 {
+    font-size: 1.2rem;
+  }
+  #statsSection .text-muted {
+    font-size: 0.9rem;
+  }
+  #statsSection .card-body {
+    padding: 0.5rem;
+  }
 }
 
 /* Task List Styles */
@@ -172,75 +186,22 @@ body {
 .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
-  color: var(--text-color);
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
-.btn-primary:hover,
-.btn-primary:focus {
+.btn-primary:hover {
   background-color: var(--primary-hover);
   border-color: var(--primary-hover);
-  color: var(--text-color);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
-}
-
-.btn-primary:active {
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
-  transform: translateY(0);
-  box-shadow: none;
-}
-
-.btn-primary:disabled {
-  background-color: var(--primary-color);
-  border-color: var(--primary-color);
-  opacity: 0.65;
-}
-
-.btn-secondary {
-  background-color: var(--dark-color);
-  border-color: var(--dark-color);
-  color: var(--text-color);
-  transition: all 0.3s ease;
-}
-
-.btn-secondary:hover,
-.btn-secondary:focus {
-  background-color: #212f3d;
-  border-color: #212f3d;
-  color: var(--text-color);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(44, 62, 80, 0.3);
-}
-
-.btn-secondary:active {
-  background-color: #212f3d;
-  border-color: #212f3d;
-  transform: translateY(0);
-  box-shadow: none;
 }
 
 .btn-outline-primary {
-  color: var(--primary-color);
-  border-color: var(--primary-color);
-  transition: all 0.3s ease;
+  transition: all 0.3s;
 }
 
-.btn-outline-primary:hover,
-.btn-outline-primary:focus {
-  background-color: var(--primary-color);
-  color: var(--text-color);
-  border-color: var(--primary-color);
+.btn-outline-primary:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
-}
-
-.btn-outline-primary:active {
-  background-color: var(--primary-hover);
-  border-color: var(--primary-hover);
-  transform: translateY(0);
-  box-shadow: none;
 }
 
 .day-option.active,
@@ -303,14 +264,43 @@ body {
   .sidebar-toggle {
     display: block !important;
   }
+
+  /* Collapsed sidebar for medium screens */
+  .sidebar-collapsed .sidebar {
+    width: var(--sidebar-collapsed-width);
+  }
+
+  .sidebar-collapsed .sidebar .nav-link span {
+    display: none;
+  }
+
+  .sidebar-collapsed .sidebar .nav-link i {
+    margin-right: 0;
+  }
+
+  .sidebar-collapsed .main-content {
+    margin-left: var(--sidebar-collapsed-width);
+  }
 }
 
 @media (max-width: 768px) {
+  /* Adjust modal sizes */
   .modal-dialog {
     margin: 0.5rem auto;
     max-width: 95%;
   }
 
+  /* Stack stats cards */
+  .stat-card {
+    margin-bottom: 1rem;
+  }
+
+  /* Adjust task item layout */
+  .task-actions {
+    margin-top: 10px;
+  }
+
+  /* Make day buttons smaller */
   .day-option,
   .edit-day-option {
     padding: 0.25rem 0.5rem;
@@ -319,6 +309,7 @@ body {
 }
 
 @media (max-width: 576px) {
+  /* Adjust header layout */
   .navbar {
     flex-direction: column;
     align-items: flex-start;
@@ -330,8 +321,30 @@ body {
     width: 100%;
   }
 
+  /* Task list improvements */
   .list-group-item {
     padding: 0.75rem;
+  }
+
+  .task-title {
+    font-size: 1rem;
+  }
+
+  .task-priority {
+    font-size: 0.7rem;
+  }
+
+  /* Stats section */
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
   }
 }
 
@@ -362,6 +375,101 @@ body {
   animation: slideOut 0.3s forwards;
 }
 
+/* Loading spinner */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: #777;
+}
+
+.empty-state i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Transition effects */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 768px) {
+  /* Improved task item layout for small screens */
+  .task-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 1rem;
+  }
+
+  /* Better spacing for task content */
+  .task-item > div:first-child {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Make task name wrap properly */
+  .task-item p {
+    white-space: normal;
+    word-break: break-word;
+    margin-bottom: 0.5rem;
+  }
+
+  /* Stack badges vertically on small screens */
+  .task-item .d-flex.align-items-center.gap-2 {
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+
+  /* Full width for action buttons on small screens */
+  .task-item > div:last-child {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Adjust badge sizes */
+  .badge {
+    font-size: 0.75rem;
+    padding: 0.3em 0.6em;
+  }
+
+  /* Make day badges smaller in all tasks view */
+  .day-badge {
+    font-size: 0.7rem;
+    padding: 0.2em 0.4em;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Even more compact layout for very small screens */
+  .task-item {
+    padding: 0.75rem;
+  }
+
+  /* Smaller font size for task name */
+  .task-item p {
+    font-size: 1rem;
+  }
+
+  /* Compact buttons */
+  .task-item .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+  }
+}
+
 /* Custom styles for SweetAlert */
 .swal2-popup {
   width: 30em !important;
@@ -370,19 +478,389 @@ body {
   border: 1px solid #333 !important;
 }
 
+/* Make title smaller */
 .swal2-title {
   font-size: 1.1rem !important;
   margin-bottom: 0.5em !important;
 }
 
+/* Make content text smaller */
 .swal2-content {
   font-size: 0.9rem !important;
 }
 
+/* Make buttons smaller */
 .swal2-actions {
   margin: 1em auto 0 !important;
 }
 
+.swal2-confirm,
+.swal2-cancel {
+  padding: 0.35em 0.75em !important;
+  font-size: 0.9rem !important;
+  background-color: var(--primary-color) !important;
+}
+
+/* Button Styles */
+.btn-primary {
+  background-color: var(--primary-color); /* #2874a6 */
+  border-color: var(--primary-color);
+  color: var(--text-color); /* #ffffff */
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--primary-hover); /* #1f5a82 */
+  border-color: var(--primary-hover);
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
+}
+
+.btn-primary:active {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-primary:disabled {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  opacity: 0.65;
+}
+
+.btn-success {
+  background-color: var(--success-color); /* #2e7d32 */
+  border-color: var(--success-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover,
+.btn-success:focus {
+  background-color: #256429; /* Darkened success for hover */
+  border-color: #256429;
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+}
+
+.btn-success:active {
+  background-color: #256429;
+  border-color: #256429;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-success:disabled {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+  opacity: 0.65;
+}
+
+.btn-info {
+  background-color: var(--info-color); /* #2980b9 */
+  border-color: var(--info-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.btn-info:hover,
+.btn-info:focus {
+  background-color: #206896; /* Darkened info for hover */
+  border-color: #206896;
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(41, 128, 185, 0.3);
+}
+
+.btn-info:active {
+  background-color: #206896;
+  border-color: #206896;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-info:disabled {
+  background-color: var(--info-color);
+  border-color: var(--info-color);
+  opacity: 0.65;
+}
+
+.btn-warning {
+  background-color: var(--warning-color); /* #b7950b */
+  border-color: var(--warning-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.btn-warning:hover,
+.btn-warning:focus {
+  background-color: #997a09; /* Darkened warning for hover */
+  border-color: #997a09;
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(183, 149, 11, 0.3);
+}
+
+.btn-warning:active {
+  background-color: #997a09;
+  border-color: #997a09;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-warning:disabled {
+  background-color: var(--warning-color);
+  border-color: var(--warning-color);
+  opacity: 0.65;
+}
+
+.btn-danger {
+  background-color: var(--danger-color); /* #c0392b */
+  border-color: var(--danger-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+  background-color: #a33124; /* Darkened danger for hover */
+  border-color: #a33124;
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(192, 57, 43, 0.3);
+}
+
+.btn-danger:active {
+  background-color: #a33124;
+  border-color: #a33124;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-danger:disabled {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+  opacity: 0.65;
+}
+
+.btn-dark {
+  background-color: var(--dark-color); /* #2c3e50 */
+  border-color: var(--dark-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.btn-dark:hover,
+.btn-dark:focus {
+  background-color: #212f3d; /* Darkened dark for hover */
+  border-color: #212f3d;
+  color: var(--text-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(44, 62, 80, 0.3);
+}
+
+.btn-dark:active {
+  background-color: #212f3d;
+  border-color: #212f3d;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-dark:disabled {
+  background-color: var(--dark-color);
+  border-color: var(--dark-color);
+  opacity: 0.65;
+}
+
+.btn-light {
+  background-color: var(--light-color); /* #f0efeb */
+  border-color: var(--light-color);
+  color: var(--text-dark); /* #2f2f2f */
+  transition: all 0.3s ease;
+}
+
+.btn-light:hover,
+.btn-light:focus {
+  background-color: #d8d7d3; /* Darkened light for hover */
+  border-color: #d8d7d3;
+  color: var(--text-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(240, 239, 235, 0.3);
+}
+
+.btn-light:active {
+  background-color: #d8d7d3;
+  border-color: #d8d7d3;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-light:disabled {
+  background-color: var(--light-color);
+  border-color: var(--light-color);
+  opacity: 0.65;
+}
+
+/* Outline Button Styles */
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
+}
+
+.btn-outline-primary:active {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline-success {
+  color: var(--success-color);
+  border-color: var(--success-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-success:hover,
+.btn-outline-success:focus {
+  background-color: var(--success-color);
+  color: var(--text-color);
+  border-color: var(--success-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+}
+
+.btn-outline-success:active {
+  background-color: #256429;
+  border-color: #256429;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline-info {
+  color: var(--info-color);
+  border-color: var(--info-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-info:hover,
+.btn-outline-info:focus {
+  background-color: var(--info-color);
+  color: var(--text-color);
+  border-color: var(--info-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(41, 128, 185, 0.3);
+}
+
+.btn-outline-info:active {
+  background-color: #206896;
+  border-color: #206896;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline-warning {
+  color: var(--warning-color);
+  border-color: var(--warning-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-warning:hover,
+.btn-outline-warning:focus {
+  background-color: var(--warning-color);
+  color: var(--text-color);
+  border-color: var(--warning-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(183, 149, 11, 0.3);
+}
+
+.btn-outline-warning:active {
+  background-color: #997a09;
+  border-color: #997a09;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline-danger {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-danger:hover,
+.btn-outline-danger:focus {
+  background-color: var(--danger-color);
+  color: var(--text-color);
+  border-color: var(--danger-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(192, 57, 43, 0.3);
+}
+
+.btn-outline-danger:active {
+  background-color: #a33124;
+  border-color: #a33124;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline-dark {
+  color: var(--dark-color);
+  border-color: var(--dark-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-dark:hover,
+.btn-outline-dark:focus {
+  background-color: var(--dark-color);
+  color: var(--text-color);
+  border-color: var(--dark-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(44, 62, 80, 0.3);
+}
+
+.btn-outline-dark:active {
+  background-color: #212f3d;
+  border-color: #212f3d;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline-light {
+  color: var(--light-color);
+  border-color: var(--light-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover,
+.btn-outline-light:focus {
+  background-color: var(--light-color);
+  color: var(--text-dark);
+  border-color: var(--light-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(240, 239, 235, 0.3);
+}
+
+.btn-outline-light:active {
+  background-color: #d8d7d3;
+  border-color: #d8d7d3;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Ensure buttons in SweetAlert match the theme */
 .swal2-confirm {
   background-color: var(--primary-color) !important;
   border-color: var(--primary-color) !important;
@@ -407,8 +885,17 @@ body {
 
 .swal2-cancel:hover,
 .swal2-cancel:focus {
-  background-color: #a33124 !important;
+  background-color: #a33124 !important; /* Darkened danger for hover */
   border-color: #a33124 !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(192, 57, 43, 0.3);
+}
+
+.text-primary {
+  color: var(--primary-color) !important; /* #2874a6 */
+}
+
+/* Optional: Add smooth color transition */
+.spinner-border {
+  transition: color 0.3s ease;
 }
