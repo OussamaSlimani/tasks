@@ -527,13 +527,18 @@ body {
   background-color: var(--primary-color) !important;
 }
 
-.task-cell div {
-  display: flex; /* keep flex for icon + text alignment */
-  align-items: center; /* vertical center */
-  flex-wrap: wrap; /* allow content to wrap to next line */
-  gap: 4px; /* optional spacing between icon and text */
+#statsSection .display-6 {
+  font-size: 2.5rem; /* default */
 }
 
-.task-cell span {
-  white-space: normal; /* allow wrapping */
+@media (max-width: 768px) {
+  #statsSection .display-6 {
+    font-size: 2rem; /* medium screens */
+  }
+}
+
+@media (max-width: 576px) {
+  #statsSection .display-6 {
+    font-size: 1.5rem; /* small screens */
+  }
 }
