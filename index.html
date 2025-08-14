@@ -10,7 +10,8 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -22,12 +23,14 @@
             <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 sidebar">
                 <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 min-vh-100">
                     <div class="sidebar-header w-100 text-center mb-4">
-                        <h4 class="m-2">
-                            Task Manager
+                        <h4 class="m-1">
+                            My Space
                         </h4>
+                        <small class="text-muted">Just for me</small>
                         <hr class="sidebar-divider">
                     </div>
-                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100" id="sidebar-menu">
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100"
+                        id="sidebar-menu">
                         <li class="nav-item day-tab w-100 active" id="manageTasksTab">
                             <a href="#" class="nav-link d-flex align-items-center px-3">
                                 <i class="fas fa-list-check me-3"></i>
@@ -114,12 +117,31 @@
                     </div>
                 </nav>
 
+                <!-- Category Filter -->
+                <div class="container-fluid px-3 mb-3" id="filterSection">
+                    <div class="row justify-content-end">
+                        <div class="col-md-4 col-sm-6 col-12">
+                            <div class="input-group ms-auto px-2">
+                                <span class="input-group-text"><i class="fas fa-filter"></i></span>
+                                <select class="form-select" id="categoryFilter">
+                                    <option value="all">All Categories</option>
+                                    <option value="religious">Religious</option>
+                                    <option value="learn">Learn</option>
+                                    <option value="health">Health</option>
+                                    <option value="work">Work</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Stats Section -->
                 <div class="row justify-content-center m-1 d-none" id="statsSection">
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100 bg-dark-gradient">
                             <div class="card-body text-center">
-                                
+
                                 <p class="display-6 mb-0" id="pendingTasksStat">0</p>
                                 <small class="text-muted">Tasks remaining</small>
                             </div>
@@ -128,7 +150,7 @@
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100 bg-dark-gradient">
                             <div class="card-body text-center">
-                                
+
                                 <p class="display-6 mb-0" id="completionPercent">0%</p>
                                 <small class="text-muted">of daily goals</small>
                             </div>
@@ -137,7 +159,7 @@
                     <div class="col-lg-4 col-md-6 mb-4">
                         <div class="card h-100 bg-dark-gradient">
                             <div class="card-body text-center">
-                                
+
                                 <p class="display-6 mb-0" id="pointsDisplay">0/0</p>
                                 <small class="text-muted">points today</small>
                             </div>
@@ -170,12 +192,14 @@
                     <form id="taskForm">
                         <div class="mb-3">
                             <label for="taskName" class="form-label">Task Name</label>
-                            <input type="text" class="form-control" id="taskName" placeholder="Enter task name" required>
+                            <input type="text" class="form-control" id="taskName" placeholder="Enter task name"
+                                required>
                         </div>
 
                         <div class="mb-3">
-                            <label for="taskDescription" class="form-label">Description (Optional)</label>
-                            <textarea class="form-control" id="taskDescription" rows="3" placeholder="Enter task description"></textarea>
+                            <label for="taskDescription" class="form-label">Description Link (Optional)</label>
+                            <textarea class="form-control" id="taskDescription" rows="3"
+                                placeholder="Enter task description"></textarea>
                         </div>
 
                         <div class="row mb-3">
@@ -204,13 +228,20 @@
                         <div class="mb-3">
                             <label class="form-label">Days</label>
                             <div class="d-flex flex-wrap gap-2">
-                                <button type="button" class="btn btn-outline-primary day-option" data-day="monday">Monday</button>
-                                <button type="button" class="btn btn-outline-primary day-option" data-day="tuesday">Tuesday</button>
-                                <button type="button" class="btn btn-outline-primary day-option" data-day="wednesday">Wednesday</button>
-                                <button type="button" class="btn btn-outline-primary day-option" data-day="thursday">Thursday</button>
-                                <button type="button" class="btn btn-outline-primary day-option" data-day="friday">Friday</button>
-                                <button type="button" class="btn btn-outline-primary day-option" data-day="saturday">Saturday</button>
-                                <button type="button" class="btn btn-outline-primary day-option" data-day="sunday">Sunday</button>
+                                <button type="button" class="btn btn-outline-primary day-option"
+                                    data-day="monday">Monday</button>
+                                <button type="button" class="btn btn-outline-primary day-option"
+                                    data-day="tuesday">Tuesday</button>
+                                <button type="button" class="btn btn-outline-primary day-option"
+                                    data-day="wednesday">Wednesday</button>
+                                <button type="button" class="btn btn-outline-primary day-option"
+                                    data-day="thursday">Thursday</button>
+                                <button type="button" class="btn btn-outline-primary day-option"
+                                    data-day="friday">Friday</button>
+                                <button type="button" class="btn btn-outline-primary day-option"
+                                    data-day="saturday">Saturday</button>
+                                <button type="button" class="btn btn-outline-primary day-option"
+                                    data-day="sunday">Sunday</button>
                             </div>
                             <input type="hidden" id="selectedDays" name="selectedDays">
                         </div>
@@ -241,7 +272,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="editTaskDescription" class="form-label">Description</label>
+                            <label for="editTaskDescription" class="form-label">Description Link (Optional)</label>
                             <textarea class="form-control" id="editTaskDescription" rows="3"></textarea>
                         </div>
 
@@ -258,7 +289,7 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="editTaskCategory" class="form-label">Category</label>
-                               <select class="form-select" id="editTaskCategory" required>
+                                <select class="form-select" id="editTaskCategory" required>
                                     <option value="religious">Religious</option>
                                     <option value="learn">Learn</option>
                                     <option value="health">Health</option>
@@ -271,13 +302,20 @@
                         <div class="mb-3">
                             <label class="form-label">Days</label>
                             <div class="d-flex flex-wrap gap-2" id="editDaysContainer">
-                                <button type="button" class="btn btn-outline-primary edit-day-option" data-day="monday">Monday</button>
-                                <button type="button" class="btn btn-outline-primary edit-day-option" data-day="tuesday">Tuesday</button>
-                                <button type="button" class="btn btn-outline-primary edit-day-option" data-day="wednesday">Wednesday</button>
-                                <button type="button" class="btn btn-outline-primary edit-day-option" data-day="thursday">Thursday</button>
-                                <button type="button" class="btn btn-outline-primary edit-day-option" data-day="friday">Friday</button>
-                                <button type="button" class="btn btn-outline-primary edit-day-option" data-day="saturday">Saturday</button>
-                                <button type="button" class="btn btn-outline-primary edit-day-option" data-day="sunday">Sunday</button>
+                                <button type="button" class="btn btn-outline-primary edit-day-option"
+                                    data-day="monday">Monday</button>
+                                <button type="button" class="btn btn-outline-primary edit-day-option"
+                                    data-day="tuesday">Tuesday</button>
+                                <button type="button" class="btn btn-outline-primary edit-day-option"
+                                    data-day="wednesday">Wednesday</button>
+                                <button type="button" class="btn btn-outline-primary edit-day-option"
+                                    data-day="thursday">Thursday</button>
+                                <button type="button" class="btn btn-outline-primary edit-day-option"
+                                    data-day="friday">Friday</button>
+                                <button type="button" class="btn btn-outline-primary edit-day-option"
+                                    data-day="saturday">Saturday</button>
+                                <button type="button" class="btn btn-outline-primary edit-day-option"
+                                    data-day="sunday">Sunday</button>
                             </div>
                             <input type="hidden" id="editSelectedDays" name="editSelectedDays">
                         </div>
@@ -300,4 +338,5 @@
     <!-- Custom JS -->
     <script type="module" src="js/script.js"></script>
 </body>
+
 </html>

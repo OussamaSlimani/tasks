@@ -41,16 +41,39 @@ const pointsDisplay = document.getElementById("pointsDisplay");
 const dayOptions = document.querySelectorAll(".day-option");
 const saveTaskBtn = document.getElementById("saveTaskBtn");
 const updateTaskBtn = document.getElementById("updateTaskBtn");
+const categoryFilter = document.getElementById("categoryFilter");
 
-// Current day filter (default to 'all')
-let currentDay = "all";
+// Current day filter (default to last viewed or 'all')
+let currentDay = localStorage.getItem("lastViewedDay") || "all";
 let tasksListener = null;
 
 // Initialize the app
 document.addEventListener("DOMContentLoaded", function () {
   loadTasks();
   setupEventListeners();
+  setInitialActiveTab();
 });
+
+function setInitialActiveTab() {
+  // Remove active class from all tabs
+  dayTabs.forEach((tab) => tab.querySelector("a").classList.remove("active"));
+  manageTasksTab.querySelector("a").classList.remove("active");
+
+  // Set active class based on currentDay
+  if (currentDay === "all") {
+    manageTasksTab.querySelector("a").classList.add("active");
+  } else {
+    const initialTab = document.querySelector(
+      `.day-tab[data-day="${currentDay}"]`
+    );
+    if (initialTab) {
+      initialTab.querySelector("a").classList.add("active");
+    }
+  }
+
+  // Update UI for the initial day
+  updateUIForDay(currentDay);
+}
 
 // Firebase CRUD Operations
 
@@ -250,13 +273,32 @@ function setupTasksListener() {
   );
 }
 
-// Filter tasks by day
+// Filter and sort tasks by day and category
 function filterTasksByDay(tasks, day) {
   if (day === "all") {
+    // For "All Tasks" view, show all tasks but filter by category if selected
+    const selectedCategory = categoryFilter.value;
+    tasks = tasks.filter(
+      (task) => selectedCategory === "all" || task.category === selectedCategory
+    );
     return tasks;
   }
 
-  return tasks.filter((task) => task.days && task.days.includes(day));
+  // Filter tasks for the specific day
+  const dayTasks = tasks.filter((task) => task.days && task.days.includes(day));
+
+  // Sort tasks - uncompleted first, then by priority (critical first)
+  return dayTasks.sort((a, b) => {
+    const aCompleted = a.completed && a.completed[day];
+    const bCompleted = b.completed && b.completed[day];
+
+    // Uncompleted tasks come first
+    if (aCompleted && !bCompleted) return 1;
+    if (!aCompleted && bCompleted) return -1;
+
+    // If same completion status, sort by priority (critical first)
+    return a.priority - b.priority;
+  });
 }
 
 // Calculate statistics for a specific day
@@ -298,25 +340,36 @@ function setupEventListeners() {
     tab.addEventListener("click", function () {
       currentDay = this.getAttribute("data-day") || "all";
 
+      // Store the selected day in localStorage
+      localStorage.setItem("lastViewedDay", currentDay);
+
       // Update active tab
       dayTabs.forEach((t) => t.querySelector("a").classList.remove("active"));
+      manageTasksTab.querySelector("a").classList.remove("active");
       this.querySelector("a").classList.add("active");
 
       // Update title and render tasks
-      if (currentDay === "all") {
-        currentDayTitle.textContent = "All Tasks";
-        createTaskBtn.style.display = "block";
-        statsSection.classList.add("d-none");
-      } else {
-        currentDayTitle.textContent =
-          currentDay.charAt(0).toUpperCase() + currentDay.slice(1);
-        createTaskBtn.style.display = "none";
-        statsSection.classList.remove("d-none");
-      }
+      updateUIForDay(currentDay);
 
       // Trigger re-rendering with current tasks
       setupTasksListener();
     });
+  });
+
+  // Manage Tasks tab (All Tasks view)
+  manageTasksTab.addEventListener("click", function () {
+    currentDay = "all";
+    localStorage.setItem("lastViewedDay", "all");
+
+    // Update active tab
+    dayTabs.forEach((t) => t.querySelector("a").classList.remove("active"));
+    this.querySelector("a").classList.add("active");
+
+    // Update UI
+    updateUIForDay("all");
+
+    // Trigger re-rendering with current tasks
+    setupTasksListener();
   });
 
   // Day selection in create modal
@@ -325,6 +378,11 @@ function setupEventListeners() {
       this.classList.toggle("active");
       updateSelectedDays();
     });
+  });
+
+  // Category filter change
+  categoryFilter.addEventListener("change", function () {
+    setupTasksListener();
   });
 
   // Save new task
@@ -416,6 +474,20 @@ function setupEventListeners() {
   });
 }
 
+function updateUIForDay(day) {
+  if (day === "all") {
+    currentDayTitle.textContent = "All Tasks";
+    createTaskBtn.style.display = "block";
+    statsSection.classList.add("d-none");
+    document.getElementById("filterSection").classList.remove("d-none");
+  } else {
+    currentDayTitle.textContent = day.charAt(0).toUpperCase() + day.slice(1);
+    createTaskBtn.style.display = "none";
+    statsSection.classList.remove("d-none");
+    document.getElementById("filterSection").classList.add("d-none");
+  }
+}
+
 // Helper functions
 function getPriorityLabel(priority) {
   const labels = {
@@ -454,7 +526,15 @@ function getPriorityBadge(priority) {
 }
 
 function getCategoryBadge(category) {
-  return `<span class="badge bg-secondary">
+  const categoryClasses = {
+    religious: "bg-primary",
+    learn: "bg-info",
+    health: "bg-success",
+    work: "bg-warning",
+    other: "bg-secondary",
+  };
+
+  return `<span class="badge bg-secondary"}">
     ${capitalize(category)}
   </span>`;
 }
@@ -500,20 +580,18 @@ function renderTasks(tasks) {
       <div class="list-group-item task-item m-1 d-flex justify-content-between align-items-center border ${
         isCompleted ? "task-completed" : ""
       }">
-        <div>
-          <div class="mb-2" style="${
+        <div class="task-content">
+          <p class="mb-1 task-title" style="${
             isCompleted ? "text-decoration: line-through; color: #6c757d;" : ""
-          }">
-            <p class="mb-0" style="font-size: 1.2rem;">${task.name}</p>
-          </div>
-
-          <div class="d-flex align-items-center gap-2 mb-2">
+          }">${task.name}</p>
+          
+          <div class="d-flex align-items-center flex-wrap gap-1 task-meta">
             ${getPriorityBadge(task.priority)}
             ${getCategoryBadge(task.category)}
     `;
 
     if (currentDay === "all") {
-      html += `<div class="ms-2 d-flex gap-1">`;
+      html += `<div class="d-flex flex-wrap gap-1 task-days">`;
       if (task.days) {
         task.days.forEach((day) => {
           const dayCompleted = task.completed?.[day] || false;
@@ -529,7 +607,7 @@ function renderTasks(tasks) {
       html += `</div>`;
     }
 
-    html += `</div></div><div class="d-flex gap-2">`;
+    html += `</div></div><div class="task-actions d-flex gap-1">`;
 
     // Description button (day-specific views only)
     if (currentDay !== "all") {
