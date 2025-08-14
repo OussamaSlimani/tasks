@@ -1,15 +1,17 @@
 :root {
-  --primary-color: #3a5fcd; /* retro royal blue */
-  --primary-hover: #2e4aa1; /* darker blue for hover */
-  --secondary-color: #f08a5d; /* retro muted orange */
-  --success-color: #6ab04c; /* retro green */
-  --info-color: #2980b9; /* muted retro blue */
-  --warning-color: #f6b93b; /* retro mustard yellow */
-  --danger-color: #d64541; /* retro red */
-  --dark-color: #2c3e50; /* deep blue-gray */
-  --light-color: #f0efeb; /* off-white cream */
+  --primary-color: #2874a6;
+  --primary-hover: #1f5a82;
+  --secondary-color: #d35400;
+  --success-color: #2e7d32;
+  --info-color: #2980b9;
+  --warning-color: #b7950b;
+  --danger-color: #c0392b;
+  --dark-color: #2c3e50;
+  --light-color: #f0efeb;
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 80px;
+  --text-color: #ffffff;
+  --text-dark: #2f2f2f;
 }
 
 body {
@@ -106,6 +108,22 @@ body {
   font-weight: 600;
 }
 
+#statsSection .display-6 {
+  font-size: 2.5rem; /* default */
+}
+
+@media (max-width: 768px) {
+  #statsSection .display-6 {
+    font-size: 1.8rem; /* medium screens */
+  }
+}
+
+@media (max-width: 576px) {
+  #statsSection .display-6 {
+    font-size: 1.3rem; /* small screens */
+  }
+}
+
 /* Task List Styles */
 .list-group-item {
   background-color: #252525;
@@ -130,7 +148,7 @@ body {
   font-weight: 500;
   letter-spacing: 0.5px;
   padding: 0.35em 0.65em;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -143,30 +161,29 @@ body {
   font-size: 0.65rem;
 }
 
-/* Priority badges - retro colors with readable text */
 .badge.bg-critical {
-  background-color: #ff4b4b; /* retro red */
-  color: white; /* dark enough contrast */
+  background-color: #c0392b;
+  color: white;
 }
 
 .badge.bg-high {
-  background-color: #ff7f50; /* coral orange */
+  background-color: #d35400;
   color: white;
 }
 
 .badge.bg-medium {
-  background-color: #f4d35e; /* mustard yellow */
-  color: #2f2f2f; /* dark text for readability */
+  background-color: #b7950b;
+  color: white;
 }
 
 .badge.bg-low {
-  background-color: #4ea8de; /* soft retro blue */
+  background-color: #2874a6;
   color: white;
 }
 
 .badge.bg-minimal {
-  background-color: #81c784; /* pastel green */
-  color: #2f2f2f; /* dark text for readability */
+  background-color: #2e7d32;
+  color: white;
 }
 
 /* Button Styles */
@@ -404,7 +421,7 @@ body {
   /* Better spacing for task content */
   .task-item > div:first-child {
     width: 100%;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
   /* Make task name wrap properly */
@@ -428,13 +445,13 @@ body {
 
   /* Adjust badge sizes */
   .badge {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     padding: 0.3em 0.6em;
   }
 
   /* Make day badges smaller in all tasks view */
   .day-badge {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     padding: 0.2em 0.4em;
   }
 }
@@ -455,45 +472,6 @@ body {
     padding: 0.25rem 0.5rem;
     font-size: 0.8rem;
   }
-}
-
-/* Weekly Calendar Styles */
-.weekly-calendar {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-}
-
-.weekly-calendar th,
-.weekly-calendar td {
-  border: 0.5px solid #333;
-  padding: 8px;
-  vertical-align: middle;
-}
-
-.weekly-calendar th {
-  font-weight: normal;
-  text-align: center;
-  white-space: normal;
-  background-color: #1e1e1e;
-}
-
-.weekly-calendar .task-cell {
-  background-color: transparent;
-}
-
-.weekly-calendar .task-cell .d-flex {
-  height: 100%;
-  align-items: center;
-}
-
-.weekly-calendar td {
-  background-color: #1e1e1e;
-}
-
-.weekly-calendar i {
-  font-size: 1rem;
 }
 
 /* Custom styles for SweetAlert */
@@ -525,20 +503,4 @@ body {
   padding: 0.35em 0.75em !important;
   font-size: 0.9rem !important;
   background-color: var(--primary-color) !important;
-}
-
-#statsSection .display-6 {
-  font-size: 2.5rem; /* default */
-}
-
-@media (max-width: 768px) {
-  #statsSection .display-6 {
-    font-size: 2rem; /* medium screens */
-  }
-}
-
-@media (max-width: 576px) {
-  #statsSection .display-6 {
-    font-size: 1.5rem; /* small screens */
-  }
 }
