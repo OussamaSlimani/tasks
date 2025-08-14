@@ -108,16 +108,12 @@ body {
   font-weight: 600;
 }
 
-#statsSection .display-6 {
-  font-size: 2.5rem; /* default */
-}
-
 @media (max-width: 576px) {
   #statsSection .display-6 {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
   #statsSection .text-muted {
-    font-size: 0.8rem;
+    font-size: 0.95rem;
   }
   #statsSection .card-body {
     padding: 0.5rem;
