@@ -37,6 +37,13 @@
                                 <span class="ms-1">All Tasks</span>
                             </a>
                         </li>
+                        <li class="nav-item w-100" id="calendarTab">
+                            <a href="#" class="nav-link d-flex align-items-center px-3">
+                                <i class="fas fa-calendar-week me-3"></i>
+                                <span class="ms-1">Calendar</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-divider my-2"></li>
                         <li class="nav-item w-100">
                             <a href="statistics.html" target="_blank" class="nav-link d-flex align-items-center px-3">
                                 <i class="fas fa-chart-line me-3"></i>
@@ -125,11 +132,8 @@
                                 <span class="input-group-text"><i class="fas fa-filter"></i></span>
                                 <select class="form-select" id="categoryFilter">
                                     <option value="all">All Categories</option>
-                                    <option value="religious">Religious</option>
-                                    <option value="learn">Learn</option>
-                                    <option value="health">Health</option>
-                                    <option value="work">Work</option>
-                                    <option value="other">Other</option>
+                                    <option value="repeated">Repeated (Habit)</option>
+                                    <option value="regular">Regular (One-time)</option>
                                 </select>
                             </div>
                         </div>
@@ -216,11 +220,8 @@
                             <div class="col-md-4">
                                 <label for="taskCategory" class="form-label">Category</label>
                                 <select class="form-select" id="taskCategory" required>
-                                    <option value="religious">Religious</option>
-                                    <option value="learn">Learn</option>
-                                    <option value="health">Health</option>
-                                    <option value="work">Work</option>
-                                    <option value="other">Other</option>
+                                    <option value="repeated">Repeated</option>
+                                    <option value="regular">Regular</option>
                                 </select>
                             </div>
                         </div>
@@ -290,11 +291,8 @@
                             <div class="col-md-4">
                                 <label for="editTaskCategory" class="form-label">Category</label>
                                 <select class="form-select" id="editTaskCategory" required>
-                                    <option value="religious">Religious</option>
-                                    <option value="learn">Learn</option>
-                                    <option value="health">Health</option>
-                                    <option value="work">Work</option>
-                                    <option value="other">Other</option>
+                                    <option value="repeated">Repeated</option>
+                                    <option value="regular">Regular</option>
                                 </select>
                             </div>
                         </div>

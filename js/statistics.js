@@ -74,7 +74,7 @@ function calculateStatistics(tasks) {
     "saturday",
     "sunday",
   ];
-  const categories = ["religious", "learn", "health", "work", "other"];
+  const categories = ["repeated", "regular"];
   const priorities = [1, 2, 3, 4, 5];
 
   // Initialize stats objects
@@ -322,24 +322,15 @@ function renderTasksByCategoryChart(stats) {
   charts.tasksByCategory = new Chart(ctx, {
     type: "pie",
     data: {
-      labels: ["Religious", "Learn", "Health", "Work", "Other"],
+      labels: ["Regular", "Repeated"], // Updated labels
       datasets: [
         {
           data: stats.tasksByCategory,
           backgroundColor: [
-            "rgba(83, 82, 237, 0.7)", // Religious
-            "rgba(75, 192, 192, 0.7)", // Learn
-            "rgba(255, 99, 132, 0.7)", // Health
-            "rgba(255, 206, 86, 0.7)", // Work
-            "rgba(153, 102, 255, 0.7)", // Other
+            "rgba(0, 184, 148, 0.7)", // Regular
+            "rgba(108, 92, 231, 0.7)", // Repeated
           ],
-          borderColor: [
-            "rgba(83, 82, 237, 1)",
-            "rgba(75, 192, 192, 1)",
-            "rgba(255, 99, 132, 1)",
-            "rgba(255, 206, 86, 1)",
-            "rgba(153, 102, 255, 1)",
-          ],
+          borderColor: ["rgba(0, 184, 148, 1)", "rgba(108, 92, 231, 1)"],
           borderWidth: 1,
         },
       ],

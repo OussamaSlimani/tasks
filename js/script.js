@@ -33,6 +33,7 @@ const tasksList = document.getElementById("tasksList");
 const dayTabs = document.querySelectorAll(".day-tab");
 const currentDayTitle = document.getElementById("currentDayTitle");
 const manageTasksTab = document.getElementById("manageTasksTab");
+const calendarTab = document.getElementById("calendarTab");
 const createTaskBtn = document.getElementById("createTaskBtn");
 const statsSection = document.getElementById("statsSection");
 const pendingTasksStat = document.getElementById("pendingTasksStat");
@@ -55,13 +56,15 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function setInitialActiveTab() {
-  // Remove active class from all tabs
-  dayTabs.forEach((tab) => tab.querySelector("a").classList.remove("active"));
-  manageTasksTab.querySelector("a").classList.remove("active");
+  // Remove active class from all sidebar links
+  document
+    .querySelectorAll("#sidebar-menu .nav-link")
+    .forEach((link) => link.classList.remove("active"));
 
-  // Set active class based on currentDay
   if (currentDay === "all") {
     manageTasksTab.querySelector("a").classList.add("active");
+  } else if (currentDay === "calendar") {
+    calendarTab.querySelector("a").classList.add("active");
   } else {
     const initialTab = document.querySelector(
       `.day-tab[data-day="${currentDay}"]`
@@ -253,15 +256,20 @@ function setupTasksListener() {
         }));
       }
 
-      // Filter and render tasks based on current day
-      const filteredTasks = filterTasksByDay(tasks, currentDay);
-      const stats = calculateStats(tasks, currentDay);
+      if (currentDay === "calendar") {
+        renderWeeklyView(tasks);
+        updateTaskSummary(tasks.length);
+      } else {
+        // Filter and render tasks based on current day
+        const filteredTasks = filterTasksByDay(tasks, currentDay);
+        const stats = calculateStats(tasks, currentDay);
 
-      renderTasks(filteredTasks);
-      updateTaskSummary(filteredTasks.length);
+        renderTasks(filteredTasks);
+        updateTaskSummary(filteredTasks.length);
 
-      if (currentDay !== "all") {
-        updateStats(stats);
+        if (currentDay !== "all") {
+          updateStats(stats);
+        }
       }
     },
     (error) => {
@@ -303,7 +311,7 @@ function filterTasksByDay(tasks, day) {
 
 // Calculate statistics for a specific day
 function calculateStats(tasks, day) {
-  if (day === "all") {
+  if (day === "all" || day === "calendar") {
     return null;
   }
 
@@ -337,15 +345,17 @@ function calculateStats(tasks, day) {
 function setupEventListeners() {
   // Day tabs in sidebar
   dayTabs.forEach((tab) => {
-    tab.addEventListener("click", function () {
+    tab.addEventListener("click", function (e) {
+      e.preventDefault();
       currentDay = this.getAttribute("data-day") || "all";
 
       // Store the selected day in localStorage
       localStorage.setItem("lastViewedDay", currentDay);
 
       // Update active tab
-      dayTabs.forEach((t) => t.querySelector("a").classList.remove("active"));
-      manageTasksTab.querySelector("a").classList.remove("active");
+      document
+        .querySelectorAll("#sidebar-menu .nav-link")
+        .forEach((link) => link.classList.remove("active"));
       this.querySelector("a").classList.add("active");
 
       // Update title and render tasks
@@ -356,29 +366,26 @@ function setupEventListeners() {
     });
   });
 
-  // Manage Tasks tab (All Tasks view)
-  manageTasksTab.addEventListener("click", function () {
-    currentDay = "all";
-    localStorage.setItem("lastViewedDay", "all");
+  // Calendar tab
+  if (calendarTab) {
+    calendarTab.addEventListener("click", function (e) {
+      e.preventDefault();
+      currentDay = "calendar";
+      localStorage.setItem("lastViewedDay", "calendar");
 
-    // Update active tab
-    dayTabs.forEach((t) => t.querySelector("a").classList.remove("active"));
-    this.querySelector("a").classList.add("active");
+      // Update active tab
+      document
+        .querySelectorAll("#sidebar-menu .nav-link")
+        .forEach((link) => link.classList.remove("active"));
+      this.querySelector("a").classList.add("active");
 
-    // Update UI
-    updateUIForDay("all");
+      // Update UI
+      updateUIForDay("calendar");
 
-    // Trigger re-rendering with current tasks
-    setupTasksListener();
-  });
-
-  // Day selection in create modal
-  dayOptions.forEach((option) => {
-    option.addEventListener("click", function () {
-      this.classList.toggle("active");
-      updateSelectedDays();
+      // Trigger re-rendering with current tasks
+      setupTasksListener();
     });
-  });
+  }
 
   // Category filter change
   categoryFilter.addEventListener("change", function () {
@@ -472,6 +479,14 @@ function setupEventListeners() {
       showError("Error updating task: " + result.message);
     }
   });
+
+  // Day selection in create modal
+  dayOptions.forEach((option) => {
+    option.addEventListener("click", function () {
+      this.classList.toggle("active");
+      updateSelectedDays();
+    });
+  });
 }
 
 function updateUIForDay(day) {
@@ -480,6 +495,11 @@ function updateUIForDay(day) {
     createTaskBtn.style.display = "block";
     statsSection.classList.add("d-none");
     document.getElementById("filterSection").classList.remove("d-none");
+  } else if (day === "calendar") {
+    currentDayTitle.textContent = "Weekly Calendar";
+    createTaskBtn.style.display = "block";
+    statsSection.classList.add("d-none");
+    document.getElementById("filterSection").classList.add("d-none");
   } else {
     currentDayTitle.textContent = day.charAt(0).toUpperCase() + day.slice(1);
     createTaskBtn.style.display = "none";
@@ -521,21 +541,17 @@ function getPriorityBadge(priority) {
   };
   return `<span class="badge ${getPriorityBadgeClass(priority)}">
     <i class="fas ${icons[priority] || "fa-info"}"></i>
-    ${getPriorityLabel(priority)}
   </span>`;
 }
 
 function getCategoryBadge(category) {
-  const categoryClasses = {
-    religious: "bg-primary",
-    learn: "bg-info",
-    health: "bg-success",
-    work: "bg-warning",
-    other: "bg-secondary",
+  const categoryIcons = {
+    repeated: "fa-repeat", // Icon for repeated tasks (habits)
+    regular: "fa-calendar-check", // Icon for regular (one-time) tasks
   };
 
-  return `<span class="badge bg-secondary"}">
-    ${capitalize(category)}
+  return `<span class="badge bg-secondary category-badge">
+    <i class="fas ${categoryIcons[category]}"></i>
   </span>`;
 }
 
@@ -563,7 +579,7 @@ function loadTasks() {
   setupTasksListener();
 }
 
-// Render tasks
+// Render tasks for day/all views
 function renderTasks(tasks) {
   if (!tasks || tasks.length === 0) {
     tasksList.innerHTML = '<div class="empty-message">No tasks found</div>';
@@ -625,7 +641,7 @@ function renderTasks(tasks) {
         <button class="btn btn-sm ${
           isCompleted ? "btn-outline-secondary" : "btn-outline-success"
         }"
-                onclick="toggleTaskComplete('${task.id}')"
+                onclick="toggleTaskComplete('${task.id}', '${currentDay}')"
                 title="${isCompleted ? "Mark Incomplete" : "Mark Complete"}">
           <i class="fas ${isCompleted ? "fa-undo" : "fa-check"}"></i>
         </button>
@@ -644,6 +660,96 @@ function renderTasks(tasks) {
 
     html += `</div></div>`;
   });
+
+  tasksList.innerHTML = html;
+}
+
+// Render weekly calendar view
+function renderWeeklyView(tasks) {
+  if (!tasks || tasks.length === 0) {
+    tasksList.innerHTML = '<div class="empty-message">No tasks found</div>';
+    return;
+  }
+
+  // Sort tasks: habits first, then by priority
+  const sortedTasks = tasks.sort((a, b) => {
+    if (a.category !== b.category) {
+      return a.category === "repeated" ? -1 : 1;
+    }
+    return a.priority - b.priority;
+  });
+
+  const days = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
+
+  const shortDayNames = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
+
+  let html = `
+    <table class="table weekly-calendar">
+      <thead>
+        <tr class="table-header">
+          <th class="task-column">Task</th>
+          ${shortDayNames
+            .map((day) => `<th class="day-column text-center">${day}</th>`)
+            .join("")}
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  sortedTasks.forEach((task) => {
+    // Combine category and task name
+    const categoryIcon =
+      task.category === "repeated" ? "fa-repeat" : "fa-calendar-check";
+    const taskNameWithCategory = `
+      <div class="d-flex align-items-center">
+        <i class="fas ${categoryIcon} me-2" title="${
+      task.category === "repeated" ? "Repeated Task" : "One-time Task"
+    }"></i>
+        <span>${task.name}</span>
+      </div>
+    `;
+
+    html += `
+      <tr class="table-row ${
+        task.category === "repeated" ? "habit-row" : "one-time-row"
+      }" data-task-id="${task.id}">
+        <td class="task-cell">${taskNameWithCategory}</td>
+    `;
+
+    days.forEach((day, index) => {
+      if (task.days.includes(day)) {
+        const isCompleted = task.completed && task.completed[day];
+        html += `
+          <td class="day-cell ${isCompleted ? "completed" : "pending"}">
+            <div class="d-flex justify-content-center align-items-center h-100">
+              <i class="fas ${
+                isCompleted ? "fa-check text-success" : "fa-x text-danger"
+              }"></i>
+            </div>
+          </td>
+        `;
+      } else {
+        html += `
+          <td class="day-cell">
+            <div class="d-flex justify-content-center align-items-center h-100">
+              <i class="fas fa-minus text-muted"></i>
+            </div>
+          </td>`;
+      }
+    });
+
+    html += `</tr>`;
+  });
+
+  html += `</tbody></table>`;
 
   tasksList.innerHTML = html;
 }
@@ -691,8 +797,8 @@ function updateTaskSummary(count) {
 }
 
 // Toggle task completion status for specific day
-async function toggleTaskComplete(taskId) {
-  const result = await toggleTaskCompletion(taskId, currentDay);
+async function toggleTaskComplete(taskId, day) {
+  const result = await toggleTaskCompletion(taskId, day);
   if (!result.success) {
     console.error("Error updating task: " + result.message);
     showError("Error updating task: " + result.message);

@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Habit Tracker & Weekly Manager</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            background: rgba(20, 20, 40, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .nav-link {
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            color: #e0e0e0;
+            margin-bottom: 5px;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.05);
+            min-height: 100vh;
+        }
+
+        .task-item,
+        .habit-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .task-item:hover,
+        .habit-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .habit-completed {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: #28a745;
+        }
+
+        .task-completed {
+            background: rgba(40, 167, 69, 0.2);
+            border-color: #28a745;
+        }
+
+        .weekly-planner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .day-column {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            min-height: 300px;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .day-column.drag-over {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.2);
+        }
+
+        .day-header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+        }
+
+        .draggable-task {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            cursor: move;
+            transition: all 0.3s ease;
+        }
+
+        .draggable-task:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: scale(1.02);
+        }
+
+        .draggable-task.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg);
+        }
+
+        .unassigned-tasks {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .badge {
+            border-radius: 20px;
+            padding: 5px 12px;
+        }
+
+        .bg-critical {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+
+        .bg-high {
+            background: linear-gradient(135deg, #fd7e14, #e8590c);
+        }
+
+        .bg-medium {
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+        }
+
+        .bg-low {
+            background: linear-gradient(135deg, #28a745, #1e7e34);
+        }
+
+        .bg-minimal {
+            background: linear-gradient(135deg, #6c757d, #545b62);
+        }
+
+        .habit-streak {
+            background: linear-gradient(135deg, #17a2b8, #117a8b);
+            color: white;
+            border-radius: 20px;
+            padding: 3px 8px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .modal-content {
+            background: rgba(30, 30, 50, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+
+        .form-control,
+        .form-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e0e0e0;
+            border-radius: 10px;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #667eea;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.3);
+            color: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 25px;
+            padding: 10px 25px;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            transform: translateY(-2px);
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @media (max-width: 768px) {
+            .weekly-planner {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #667eea, transparent);
+            margin: 30px 0;
+            border-radius: 2px;
+        }
+
+        .section-header {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+    </style>
+</head>
+
+<body data-bs-theme="dark">
+    <div class="container-fluid g-0">
+        <div class="row flex-nowrap">
+            <!-- Sidebar -->
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 sidebar">
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 min-vh-100">
+                    <div class="sidebar-header w-100 text-center mb-4">
+                        <h4 class="m-1">My Space</h4>
+                        <small class="text-muted">Habits & Tasks</small>
+                    </div>
+
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start w-100">
+                        <li class="nav-item w-100">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 active" id="weeklyPlannerTab">
+                                <i class="fas fa-calendar-week me-3"></i>
+                                <span class="ms-1">Weekly Planner</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100">
+                            <a href="#" class="nav-link d-flex align-items-center px-3" id="habitsTab">
+                                <i class="fas fa-repeat me-3"></i>
+                                <span class="ms-1">Habits</span>
+                            </a>
+                        </li>
+                        <div class="section-divider my-2"></div>
+                        <li class="nav-item w-100" data-day="monday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 day-tab">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Monday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100" data-day="tuesday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 day-tab">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Tuesday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100" data-day="wednesday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 day-tab">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Wednesday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100" data-day="thursday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 day-tab">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Thursday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100" data-day="friday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 day-tab">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Friday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100" data-day="saturday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 day-tab">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Saturday</span>
+                            </a>
+                        </li>
+                        <li class="nav-item w-100" data-day="sunday">
+                            <a href="#" class="nav-link d-flex align-items-center px-3 day-tab">
+                                <i class="fas fa-calendar-day me-3"></i>
+                                <span class="ms-1">Sunday</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col py-3 main-content">
+                <!-- Top Navigation -->
+                <nav class="navbar navbar-expand-lg mb-4"
+                    style="background: rgba(255, 255, 255, 0.1); border-radius: 15px;">
+                    <div class="container-fluid">
+                        <div class="d-flex flex-column">
+                            <h2 class="mb-0" id="currentViewTitle">Weekly Planner</h2>
+                            <small class="text-muted" id="viewDescription">Organize your tasks for the week</small>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" id="createTaskBtn" data-bs-toggle="modal"
+                                data-bs-target="#taskModal">
+                                <i class="fas fa-plus me-2"></i>Create Task
+                            </button>
+                            <button class="btn btn-primary" id="createHabitBtn" data-bs-toggle="modal"
+                                data-bs-target="#habitModal">
+                                <i class="fas fa-repeat me-2"></i>Create Habit
+                            </button>
+                        </div>
+                    </div>
+                </nav>
+
+                <!-- Weekly Planner View -->
+                <div id="weeklyPlannerView" class="view">
+                    <!-- Unassigned Tasks -->
+                    <div class="unassigned-tasks mb-4">
+                        <h5 class="mb-3"><i class="fas fa-inbox me-2"></i>Unassigned Tasks</h5>
+                        <div id="unassignedTasks">
+                            <!-- Tasks will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Weekly Grid -->
+                    <div class="weekly-planner" id="weeklyGrid">
+                        <!-- Days will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Habits View -->
+                <div id="habitsView" class="view d-none">
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stats-number" id="totalHabits">0</div>
+                                <div class="text-muted">Total Habits</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stats-number" id="completedHabitsToday">0</div>
+                                <div class="text-muted">Completed Today</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stats-number" id="averageStreak">0</div>
+                                <div class="text-muted">Average Streak</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="habitsList">
+                        <!-- Habits will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Daily View -->
+                <div id="dailyView" class="view d-none">
+                    <!-- Daily Stats -->
+                    <div class="row mb-4" id="dailyStats">
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stats-number" id="dailyTasksCount">0</div>
+                                <div class="text-muted">Tasks Today</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stats-number" id="dailyHabitsCount">0</div>
+                                <div class="text-muted">Habits Today</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="stats-card">
+                                <div class="stats-number" id="dailyCompletionRate">0%</div>
+                                <div class="text-muted">Completion Rate</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tasks Section -->
+                    <div class="section-header">
+                        <h4><i class="fas fa-tasks me-2"></i>Tasks</h4>
+                    </div>
+                    <div id="dailyTasks">
+                        <!-- Daily tasks will be populated here -->
+                    </div>
+
+                    <div class="section-divider"></div>
+
+                    <!-- Habits Section -->
+                    <div class="section-header">
+                        <h4><i class="fas fa-repeat me-2"></i>Habits</h4>
+                    </div>
+                    <div id="dailyHabits">
+                        <!-- Daily habits will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div class="modal fade" id="taskModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="taskModalTitle">Create New Task</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="taskForm">
+                        <input type="hidden" id="taskId">
+                        <div class="mb-3">
+                            <label for="taskName" class="form-label">Task Name</label>
+                            <input type="text" class="form-control" id="taskName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="taskDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="taskPriority" class="form-label">Priority</label>
+                                <select class="form-select" id="taskPriority">
+                                    <option value="1">1 - Critical</option>
+                                    <option value="2">2 - High</option>
+                                    <option value="3" selected>3 - Medium</option>
+                                    <option value="4">4 - Low</option>
+                                    <option value="5">5 - Minimal</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="taskCategory" class="form-label">Category</label>
+                                <select class="form-select" id="taskCategory">
+                                    <option value="work">Work</option>
+                                    <option value="personal">Personal</option>
+                                    <option value="health">Health</option>
+                                    <option value="learning">Learning</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveTaskBtn">Save Task</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Habit Modal -->
+    <div class="modal fade" id="habitModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="habitModalTitle">Create New Habit</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="habitForm">
+                        <input type="hidden" id="habitId">
+                        <div class="mb-3">
+                            <label for="habitName" class="form-label">Habit Name</label>
+                            <input type="text" class="form-control" id="habitName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="habitDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="habitDescription" rows="3"></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="habitCategory" class="form-label">Category</label>
+                                <select class="form-select" id="habitCategory">
+                                    <option value="health">Health</option>
+                                    <option value="productivity">Productivity</option>
+                                    <option value="learning">Learning</option>
+                                    <option value="mindfulness">Mindfulness</option>
+                                    <option value="social">Social</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="habitTarget" class="form-label">Daily Target</label>
+                                <input type="number" class="form-control" id="habitTarget" value="1" min="1">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Active Days</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-outline-primary habit-day-btn"
+                                    data-day="monday">Mon</button>
+                                <button type="button" class="btn btn-outline-primary habit-day-btn"
+                                    data-day="tuesday">Tue</button>
+                                <button type="button" class="btn btn-outline-primary habit-day-btn"
+                                    data-day="wednesday">Wed</button>
+                                <button type="button" class="btn btn-outline-primary habit-day-btn"
+                                    data-day="thursday">Thu</button>
+                                <button type="button" class="btn btn-outline-primary habit-day-btn"
+                                    data-day="friday">Fri</button>
+                                <button type="button" class="btn btn-outline-primary habit-day-btn"
+                                    data-day="saturday">Sat</button>
+                                <button type="button" class="btn btn-outline-primary habit-day-btn"
+                                    data-day="sunday">Sun</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="saveHabitBtn">Save Habit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Application State
+        let currentView = 'weekly';
+        let currentDay = null;
+        let tasks = [];
+        let habits = [];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function () {
+            loadData();
+            initializeEventListeners();
+            renderWeeklyPlanner();
+            switchToView('weekly');
+        });
+
+        // Data Management (simulating database)
+        function loadData() {
+            const savedTasks = localStorage.getItem('weeklyTasks');
+            const savedHabits = localStorage.getItem('habits');
+
+            tasks = savedTasks ? JSON.parse(savedTasks) : [];
+            habits = savedHabits ? JSON.parse(savedHabits) : getSampleHabits();
+
+            // Add sample data if empty
+            if (tasks.length === 0) {
+                tasks = getSampleTasks();
+            }
+
+            saveData();
+        }
+
+        function saveData() {
+            localStorage.setItem('weeklyTasks', JSON.stringify(tasks));
+            localStorage.setItem('habits', JSON.stringify(habits));
+        }
+
+        function getSampleTasks() {
+            return [
+                {
+                    id: 'task1',
+                    name: 'Complete project proposal',
+                    description: 'Finish the Q4 project proposal document',
+                    priority: 1,
+                    category: 'work',
+                    assignedDay: null,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'task2',
+                    name: 'Team meeting preparation',
+                    description: 'Prepare agenda and materials for weekly team meeting',
+                    priority: 2,
+                    category: 'work',
+                    assignedDay: 'monday',
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'task3',
+                    name: 'Grocery shopping',
+                    description: 'Buy groceries for the week',
+                    priority: 3,
+                    category: 'personal',
+                    assignedDay: 'saturday',
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                }
+            ];
+        }
+
+        function getSampleHabits() {
+            return [
+                {
+                    id: 'habit1',
+                    name: 'Morning Exercise',
+                    description: '30 minutes of cardio or strength training',
+                    category: 'health',
+                    target: 1,
+                    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                    streak: 5,
+                    completions: getInitialCompletions(),
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'habit2',
+                    name: 'Read 20 pages',
+                    description: 'Read at least 20 pages of a book',
+                    category: 'learning',
+                    target: 20,
+                    days: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+                    streak: 12,
+                    completions: getInitialCompletions(),
+                    createdAt: new Date().toISOString()
+                }
+            ];
+        }
+
+        function getInitialCompletions() {
+            const completions = {};
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            days.forEach(day => {
+                completions[day] = false;
+            });
+            return completions;
+        }
+
+        // Event Listeners
+        function initializeEventListeners() {
+            // Navigation
+            document.getElementById('weeklyPlannerTab').addEventListener('click', () => switchToView('weekly'));
+            document.getElementById('habitsTab').addEventListener('click', () => switchToView('habits'));
+
+            document.querySelectorAll('.day-tab').forEach(tab => {
+                tab.addEventListener('click', (e) => {
+                    const day = e.currentTarget.dataset.day;
+                    switchToView('daily', day);
+                });
+            });
+
+            // Modal handlers
+            document.getElementById('saveTaskBtn').addEventListener('click', saveTask);
+            document.getElementById('saveHabitBtn').addEventListener('click', saveHabit);
+
+            // Habit day selection
+            document.querySelectorAll('.habit-day-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    btn.classList.toggle('active');
+                });
+            });
+        }
+
+        // View Management
+        function switchToView(view, day = null) {
+            currentView = view;
+            currentDay = day;
+
+            // Update navigation
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+
+            if (view === 'weekly') {
+                document.getElementById('weeklyPlannerTab').classList.add('active');
+                document.getElementById('currentViewTitle').textContent = 'Weekly Planner';
+                document.getElementById('viewDescription').textContent = 'Organize your tasks for the week';
+            } else if (view === 'habits') {
+                document.getElementById('habitsTab').classList.add('active');
+                document.getElementById('currentViewTitle').textContent = 'Habits';
+                document.getElementById('viewDescription').textContent = 'Track your daily habits';
+            } else if (view === 'daily') {
+                document.querySelector(`[data-day="${day}"]`).querySelector('.nav-link').classList.add('active');
+                document.getElementById('currentViewTitle').textContent = day.charAt(0).toUpperCase() + day.slice(1);
+                document.getElementById('viewDescription').textContent = 'Tasks and habits for today';
+            }
+
+            // Show/hide views
+            document.querySelectorAll('.view').forEach(v => v.classList.add('d-none'));
+
+            if (view === 'weekly') {
+                document.getElementById('weeklyPlannerView').classList.remove('d-none');
+                renderWeeklyPlanner();
+            } else if (view === 'habits') {
+                document.getElementById('habitsView').classList.remove('d-none');
+                renderHabitsView();
+            } else if (view === 'daily') {
+                document.getElementById('dailyView').classList.remove('d-none');
+                renderDailyView(day);
+            }
+        }
+
+        // Rendering Functions
+        function renderWeeklyPlanner() {
+            renderUnassignedTasks();
+            renderWeeklyGrid();
+        }
+
+        function renderUnassignedTasks() {
+            const unassignedTasks = tasks.filter(task => !task.assignedDay);
+            const container = document.getElementById('unassignedTasks');
+
+            if (unassignedTasks.length === 0) {
+                container.innerHTML = '<p class="text-muted text-center">All tasks are assigned to days</p>';
+                return;
+            }
+
+            container.innerHTML = unassignedTasks.map(task => `
+                <div class="draggable-task" draggable="true" data-task-id="${task.id}">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${task.name}</strong>
+                            ${task.description ? `<br><small class="text-muted">${task.description}</small>` : ''}
+                        </div>
+                        <div class="d-flex gap-1">
+                            ${getPriorityBadge(task.priority)}
+                            <button class="btn btn-sm btn-outline-primary" onclick="editTask('${task.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteTask('${task.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add drag event listeners
+            container.querySelectorAll('.draggable-task').forEach(task => {
+                task.addEventListener('dragstart', handleDragStart);
+                task.addEventListener('dragend', handleDragEnd);
+            });
+        }
+
+        function renderWeeklyGrid() {
+            const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+            const container = document.getElementById('weeklyGrid');
+
+            container.innerHTML = days.map(day => {
+                const dayTasks = tasks.filter(task => task.assignedDay === day);
+                return `
+                    <div class="day-column" data-day="${day}">
+                        <div class="day-header">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            ${day.charAt(0).toUpperCase() + day.slice(1)}
+                        </div>
+                        <div class="day-tasks">
+                            ${dayTasks.map(task => `
+                                <div class="draggable-task ${task.completed ? 'task-completed' : ''}" draggable="true" data-task-id="${task.id}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <strong style="${task.completed ? 'text-decoration: line-through; opacity: 0.7;' : ''}">${task.name}</strong>
+                                            ${task.description ? `<br><small class="text-muted">${task.description}</small>` : ''}
+                                        </div>
+                                        <div class="d-flex flex-column gap-1">
+                                            ${getPriorityBadge(task.priority)}
+                                            <button class="btn btn-sm ${task.completed ? 'btn-outline-secondary' : 'btn-outline-success'}" 
+                                                    onclick="toggleTaskCompletion('${task.id}')">
+                                                <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add drag and drop event listeners
+            container.querySelectorAll('.day-column').forEach(column => {
+                column.addEventListener('dragover', handleDragOver);
+                column.addEventListener('drop', handleDrop);
+                column.addEventListener('dragenter', handleDragEnter);
+                column.addEventListener('dragleave', handleDragLeave);
+            });
+
+            container.querySelectorAll('.draggable-task').forEach(task => {
+                task.addEventListener('dragstart', handleDragStart);
+                task.addEventListener('dragend', handleDragEnd);
+            });
+        }
+
+        function renderHabitsView() {
+            const totalHabits = habits.length;
+            const today = getCurrentDay();
+            const completedToday = habits.filter(habit =>
+                habit.days.includes(today) && habit.completions[today]
+            ).length;
+            const avgStreak = totalHabits > 0 ? Math.round(habits.reduce((sum, h) => sum + h.streak, 0) / totalHabits) : 0;
+
+            document.getElementById('totalHabits').textContent = totalHabits;
+            document.getElementById('completedHabitsToday').textContent = completedToday;
+            document.getElementById('averageStreak').textContent = avgStreak;
+
+            const container = document.getElementById('habitsList');
+            container.innerHTML = habits.map(habit => `
+                <div class="habit-item ${habit.completions[today] ? 'habit-completed' : ''}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h5 class="mb-1">${habit.name}</h5>
+                            <p class="text-muted mb-2">${habit.description}</p>
+                            <div class="d-flex gap-2 mb-2">
+                                <span class="badge bg-info">${habit.category}</span>
+                                <span class="habit-streak">${habit.streak} day streak</span>
+                                <small class="text-muted">Target: ${habit.target}</small>
+                            </div>
+                            <div class="d-flex gap-1">
+                                ${habit.days.map(day => `
+                                    <span class="badge ${habit.completions[day] ? 'bg-success' : 'bg-secondary'}">
+                                        ${day.substring(0, 3)}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column gap-1">
+                            <button class="btn btn-sm btn-outline-primary" onclick="editHabit('${habit.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteHabit('${habit.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            ${habit.days.includes(today) ? `
+                                <button class="btn btn-sm ${habit.completions[today] ? 'btn-outline-secondary' : 'btn-outline-success'}"
+                                        onclick="toggleHabitCompletion('${habit.id}', '${today}')">
+                                    <i class="fas ${habit.completions[today] ? 'fa-undo' : 'fa-check'}"></i>
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderDailyView(day) {
+            const dayTasks = tasks.filter(task => task.assignedDay === day);
+            const dayHabits = habits.filter(habit => habit.days.includes(day));
+
+            const completedTasks = dayTasks.filter(task => task.completed).length;
+            const completedHabits = dayHabits.filter(habit => habit.completions[day]).length;
+            const totalItems = dayTasks.length + dayHabits.length;
+            const completedItems = completedTasks + completedHabits;
+            const completionRate = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+
+            // Update stats
+            document.getElementById('dailyTasksCount').textContent = dayTasks.length;
+            document.getElementById('dailyHabitsCount').textContent = dayHabits.length;
+            document.getElementById('dailyCompletionRate').textContent = completionRate + '%';
+
+            // Render tasks
+            const tasksContainer = document.getElementById('dailyTasks');
+            if (dayTasks.length === 0) {
+                tasksContainer.innerHTML = '<p class="text-muted text-center">No tasks scheduled for this day</p>';
+            } else {
+                tasksContainer.innerHTML = dayTasks.map(task => `
+                    <div class="task-item ${task.completed ? 'task-completed' : ''}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1" style="${task.completed ? 'text-decoration: line-through; opacity: 0.7;' : ''}">${task.name}</h5>
+                                ${task.description ? `<p class="text-muted mb-2">${task.description}</p>` : ''}
+                                <div class="d-flex gap-2">
+                                    ${getPriorityBadge(task.priority)}
+                                    <span class="badge bg-secondary">${task.category}</span>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm ${task.completed ? 'btn-outline-secondary' : 'btn-outline-success'}"
+                                        onclick="toggleTaskCompletion('${task.id}')">
+                                    <i class="fas ${task.completed ? 'fa-undo' : 'fa-check'}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editTask('${task.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Render habits
+            const habitsContainer = document.getElementById('dailyHabits');
+            if (dayHabits.length === 0) {
+                habitsContainer.innerHTML = '<p class="text-muted text-center">No habits scheduled for this day</p>';
+            } else {
+                habitsContainer.innerHTML = dayHabits.map(habit => `
+                    <div class="habit-item ${habit.completions[day] ? 'habit-completed' : ''}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <h5 class="mb-1">${habit.name}</h5>
+                                ${habit.description ? `<p class="text-muted mb-2">${habit.description}</p>` : ''}
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-info">${habit.category}</span>
+                                    <span class="habit-streak">${habit.streak} day streak</span>
+                                    <small class="text-muted">Target: ${habit.target}</small>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-1">
+                                <button class="btn btn-sm ${habit.completions[day] ? 'btn-outline-secondary' : 'btn-outline-success'}"
+                                        onclick="toggleHabitCompletion('${habit.id}', '${day}')">
+                                    <i class="fas ${habit.completions[day] ? 'fa-undo' : 'fa-check'}"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary" onclick="editHabit('${habit.id}')">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Drag and Drop Handlers
+        let draggedTask = null;
+
+        function handleDragStart(e) {
+            draggedTask = e.target.dataset.taskId;
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedTask = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            if (e.target.classList.contains('day-column') || e.target.closest('.day-column')) {
+                const column = e.target.classList.contains('day-column') ? e.target : e.target.closest('.day-column');
+                column.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            if (e.target.classList.contains('day-column') || e.target.closest('.day-column')) {
+                const column = e.target.classList.contains('day-column') ? e.target : e.target.closest('.day-column');
+                // Only remove drag-over if we're actually leaving the column
+                if (!column.contains(e.relatedTarget)) {
+                    column.classList.remove('drag-over');
+                }
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const column = e.target.classList.contains('day-column') ? e.target : e.target.closest('.day-column');
+
+            if (column && draggedTask) {
+                const targetDay = column.dataset.day;
+                const task = tasks.find(t => t.id === draggedTask);
+
+                if (task) {
+                    task.assignedDay = targetDay;
+                    saveData();
+                    renderWeeklyPlanner();
+                }
+            }
+
+            // Clean up drag state
+            document.querySelectorAll('.day-column').forEach(col => col.classList.remove('drag-over'));
+        }
+
+        // CRUD Operations
+        function saveTask() {
+            const id = document.getElementById('taskId').value;
+            const name = document.getElementById('taskName').value.trim();
+            const description = document.getElementById('taskDescription').value.trim();
+            const priority = parseInt(document.getElementById('taskPriority').value);
+            const category = document.getElementById('taskCategory').value;
+
+            if (!name) {
+                showAlert('Please enter a task name', 'error');
+                return;
+            }
+
+            if (id) {
+                // Update existing task
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    task.name = name;
+                    task.description = description;
+                    task.priority = priority;
+                    task.category = category;
+                }
+            } else {
+                // Create new task
+                const newTask = {
+                    id: 'task_' + Date.now(),
+                    name,
+                    description,
+                    priority,
+                    category,
+                    assignedDay: null,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                tasks.push(newTask);
+            }
+
+            saveData();
+            bootstrap.Modal.getInstance(document.getElementById('taskModal')).hide();
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+
+            if (currentView === 'weekly') renderWeeklyPlanner();
+            else if (currentView === 'daily') renderDailyView(currentDay);
+
+            showAlert(id ? 'Task updated successfully!' : 'Task created successfully!', 'success');
+        }
+
+        function saveHabit() {
+            const id = document.getElementById('habitId').value;
+            const name = document.getElementById('habitName').value.trim();
+            const description = document.getElementById('habitDescription').value.trim();
+            const category = document.getElementById('habitCategory').value;
+            const target = parseInt(document.getElementById('habitTarget').value);
+            const selectedDays = Array.from(document.querySelectorAll('.habit-day-btn.active')).map(btn => btn.dataset.day);
+
+            if (!name) {
+                showAlert('Please enter a habit name', 'error');
+                return;
+            }
+
+            if (selectedDays.length === 0) {
+                showAlert('Please select at least one day', 'error');
+                return;
+            }
+
+            if (id) {
+                // Update existing habit
+                const habit = habits.find(h => h.id === id);
+                if (habit) {
+                    habit.name = name;
+                    habit.description = description;
+                    habit.category = category;
+                    habit.target = target;
+                    habit.days = selectedDays;
+
+                    // Update completions for new days
+                    selectedDays.forEach(day => {
+                        if (!(day in habit.completions)) {
+                            habit.completions[day] = false;
+                        }
+                    });
+                }
+            } else {
+                // Create new habit
+                const newHabit = {
+                    id: 'habit_' + Date.now(),
+                    name,
+                    description,
+                    category,
+                    target,
+                    days: selectedDays,
+                    streak: 0,
+                    completions: getInitialCompletions(),
+                    createdAt: new Date().toISOString()
+                };
+
+                // Set only selected days in completions
+                Object.keys(newHabit.completions).forEach(day => {
+                    if (!selectedDays.includes(day)) {
+                        delete newHabit.completions[day];
+                    }
+                });
+                selectedDays.forEach(day => {
+                    newHabit.completions[day] = false;
+                });
+
+                habits.push(newHabit);
+            }
+
+            saveData();
+            bootstrap.Modal.getInstance(document.getElementById('habitModal')).hide();
+            document.getElementById('habitForm').reset();
+            document.getElementById('habitId').value = '';
+            document.querySelectorAll('.habit-day-btn').forEach(btn => btn.classList.remove('active'));
+
+            if (currentView === 'habits') renderHabitsView();
+            else if (currentView === 'daily') renderDailyView(currentDay);
+
+            showAlert(id ? 'Habit updated successfully!' : 'Habit created successfully!', 'success');
+        }
+
+        function editTask(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (!task) return;
+
+            document.getElementById('taskId').value = task.id;
+            document.getElementById('taskName').value = task.name;
+            document.getElementById('taskDescription').value = task.description || '';
+            document.getElementById('taskPriority').value = task.priority;
+            document.getElementById('taskCategory').value = task.category;
+            document.getElementById('taskModalTitle').textContent = 'Edit Task';
+
+            const modal = new bootstrap.Modal(document.getElementById('taskModal'));
+            modal.show();
+        }
+
+        function editHabit(habitId) {
+            const habit = habits.find(h => h.id === habitId);
+            if (!habit) return;
+
+            document.getElementById('habitId').value = habit.id;
+            document.getElementById('habitName').value = habit.name;
+            document.getElementById('habitDescription').value = habit.description || '';
+            document.getElementById('habitCategory').value = habit.category;
+            document.getElementById('habitTarget').value = habit.target;
+            document.getElementById('habitModalTitle').textContent = 'Edit Habit';
+
+            // Set active days
+            document.querySelectorAll('.habit-day-btn').forEach(btn => {
+                if (habit.days.includes(btn.dataset.day)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            const modal = new bootstrap.Modal(document.getElementById('habitModal'));
+            modal.show();
+        }
+
+        function deleteTask(taskId) {
+            Swal.fire({
+                title: 'Delete Task?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Delete',
+                background: 'rgba(30, 30, 50, 0.95)',
+                color: '#e0e0e0'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    tasks = tasks.filter(t => t.id !== taskId);
+                    saveData();
+
+                    if (currentView === 'weekly') renderWeeklyPlanner();
+                    else if (currentView === 'daily') renderDailyView(currentDay);
+
+                    showAlert('Task deleted successfully!', 'success');
+                }
+            });
+        }
+
+        function deleteHabit(habitId) {
+            Swal.fire({
+                title: 'Delete Habit?',
+                text: 'This will remove all progress data. This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Delete',
+                background: 'rgba(30, 30, 50, 0.95)',
+                color: '#e0e0e0'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    habits = habits.filter(h => h.id !== habitId);
+                    saveData();
+
+                    if (currentView === 'habits') renderHabitsView();
+                    else if (currentView === 'daily') renderDailyView(currentDay);
+
+                    showAlert('Habit deleted successfully!', 'success');
+                }
+            });
+        }
+
+        function toggleTaskCompletion(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = !task.completed;
+                saveData();
+
+                if (currentView === 'weekly') renderWeeklyPlanner();
+                else if (currentView === 'daily') renderDailyView(currentDay);
+            }
+        }
+
+        function toggleHabitCompletion(habitId, day) {
+            const habit = habits.find(h => h.id === habitId);
+            if (habit) {
+                habit.completions[day] = !habit.completions[day];
+
+                // Update streak (simplified logic)
+                if (habit.completions[day]) {
+                    habit.streak++;
+                } else {
+                    habit.streak = Math.max(0, habit.streak - 1);
+                }
+
+                saveData();
+
+                if (currentView === 'habits') renderHabitsView();
+                else if (currentView === 'daily') renderDailyView(currentDay);
+            }
+        }
+
+        // Utility Functions
+        function getPriorityBadge(priority) {
+            const priorityMap = {
+                1: { class: 'bg-critical', icon: 'fa-triangle-exclamation', label: 'Critical' },
+                2: { class: 'bg-high', icon: 'fa-circle-exclamation', label: 'High' },
+                3: { class: 'bg-medium', icon: 'fa-equals', label: 'Medium' },
+                4: { class: 'bg-low', icon: 'fa-arrow-down', label: 'Low' },
+                5: { class: 'bg-minimal', icon: 'fa-arrow-down-long', label: 'Minimal' }
+            };
+
+            const p = priorityMap[priority] || priorityMap[3];
+            return `<span class="badge ${p.class}">
+                <i class="fas ${p.icon}"></i> ${p.label}
+            </span>`;
+        }
+
+        function getCurrentDay() {
+            const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            return days[new Date().getDay()];
+        }
+
+        function showAlert(message, type) {
+            Swal.fire({
+                icon: type,
+                title: type === 'success' ? 'Success!' : 'Error!',
+                text: message,
+                timer: 3000,
+                timerProgressBar: true,
+                background: 'rgba(30, 30, 50, 0.95)',
+                color: '#e0e0e0'
+            });
+        }
+
+        // Reset modal titles when opening new items
+        document.getElementById('createTaskBtn').addEventListener('click', () => {
+            document.getElementById('taskModalTitle').textContent = 'Create New Task';
+            document.getElementById('taskForm').reset();
+            document.getElementById('taskId').value = '';
+        });
+
+        document.getElementById('createHabitBtn').addEventListener('click', () => {
+            document.getElementById('habitModalTitle').textContent = 'Create New Habit';
+            document.getElementById('habitForm').reset();
+            document.getElementById('habitId').value = '';
+            document.querySelectorAll('.habit-day-btn').forEach(btn => btn.classList.remove('active'));
+        });
+    </script>
+</body>
+
+</html>
