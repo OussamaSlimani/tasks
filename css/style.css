@@ -526,3 +526,14 @@ body {
   font-size: 0.9rem !important;
   background-color: var(--primary-color) !important;
 }
+
+.task-cell div {
+  display: flex; /* keep flex for icon + text alignment */
+  align-items: center; /* vertical center */
+  flex-wrap: wrap; /* allow content to wrap to next line */
+  gap: 4px; /* optional spacing between icon and text */
+}
+
+.task-cell span {
+  white-space: normal; /* allow wrapping */
+}

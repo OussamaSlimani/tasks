@@ -692,6 +692,7 @@ function renderWeeklyView(tasks) {
   const shortDayNames = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
 
   let html = `
+  <div class="table-responsive">
     <table class="table weekly-calendar">
       <thead>
         <tr class="table-header">
@@ -749,7 +750,7 @@ function renderWeeklyView(tasks) {
     html += `</tr>`;
   });
 
-  html += `</tbody></table>`;
+  html += `</tbody></table></div>`;
 
   tasksList.innerHTML = html;
 }
