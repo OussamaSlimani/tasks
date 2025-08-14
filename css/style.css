@@ -21,6 +21,14 @@ body {
   overflow-x: hidden;
 }
 
+.text-primary {
+  color: var(--primary-color) !important;
+}
+
+.spinner-border {
+  transition: color 0.3s ease;
+}
+
 /* Sidebar Styles */
 .sidebar {
   width: var(--sidebar-width);
@@ -94,30 +102,8 @@ body {
   transition: transform 0.2s;
 }
 
-.stat-card {
-  border-left: 4px solid var(--primary-color);
-}
-
-.stat-icon {
-  font-size: 1.5rem;
-  opacity: 0.8;
-}
-
-.stat-value {
-  font-size: 1.75rem;
-  font-weight: 600;
-}
-
-@media (max-width: 576px) {
-  #statsSection .display-6 {
-    font-size: 1.2rem;
-  }
-  #statsSection .text-muted {
-    font-size: 0.95rem;
-  }
-  #statsSection .card-body {
-    padding: 0.5rem;
-  }
+.bg-dark-gradient {
+  background: linear-gradient(135deg, #1e1e1e 0%, #121212 100%);
 }
 
 /* Task List Styles */
@@ -186,22 +172,75 @@ body {
 .btn-primary {
   background-color: var(--primary-color);
   border-color: var(--primary-color);
-  transition: all 0.3s;
+  color: var(--text-color);
+  transition: all 0.3s ease;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus {
   background-color: var(--primary-hover);
   border-color: var(--primary-hover);
+  color: var(--text-color);
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
 }
 
-.btn-outline-primary {
-  transition: all 0.3s;
+.btn-primary:active {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(0);
+  box-shadow: none;
 }
 
-.btn-outline-primary:hover {
+.btn-primary:disabled {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  opacity: 0.65;
+}
+
+.btn-secondary {
+  background-color: var(--dark-color);
+  border-color: var(--dark-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+  background-color: #212f3d;
+  border-color: #212f3d;
+  color: var(--text-color);
   transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(44, 62, 80, 0.3);
+}
+
+.btn-secondary:active {
+  background-color: #212f3d;
+  border-color: #212f3d;
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btn-outline-primary {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
+}
+
+.btn-outline-primary:active {
+  background-color: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .day-option.active,
@@ -264,43 +303,14 @@ body {
   .sidebar-toggle {
     display: block !important;
   }
-
-  /* Collapsed sidebar for medium screens */
-  .sidebar-collapsed .sidebar {
-    width: var(--sidebar-collapsed-width);
-  }
-
-  .sidebar-collapsed .sidebar .nav-link span {
-    display: none;
-  }
-
-  .sidebar-collapsed .sidebar .nav-link i {
-    margin-right: 0;
-  }
-
-  .sidebar-collapsed .main-content {
-    margin-left: var(--sidebar-collapsed-width);
-  }
 }
 
 @media (max-width: 768px) {
-  /* Adjust modal sizes */
   .modal-dialog {
     margin: 0.5rem auto;
     max-width: 95%;
   }
 
-  /* Stack stats cards */
-  .stat-card {
-    margin-bottom: 1rem;
-  }
-
-  /* Adjust task item layout */
-  .task-actions {
-    margin-top: 10px;
-  }
-
-  /* Make day buttons smaller */
   .day-option,
   .edit-day-option {
     padding: 0.25rem 0.5rem;
@@ -309,7 +319,6 @@ body {
 }
 
 @media (max-width: 576px) {
-  /* Adjust header layout */
   .navbar {
     flex-direction: column;
     align-items: flex-start;
@@ -321,30 +330,8 @@ body {
     width: 100%;
   }
 
-  /* Task list improvements */
   .list-group-item {
     padding: 0.75rem;
-  }
-
-  .task-title {
-    font-size: 1rem;
-  }
-
-  .task-priority {
-    font-size: 0.7rem;
-  }
-
-  /* Stats section */
-  .stat-card {
-    padding: 1rem;
-  }
-
-  .stat-value {
-    font-size: 1.5rem;
-  }
-
-  .stat-label {
-    font-size: 0.75rem;
   }
 }
 
@@ -375,101 +362,6 @@ body {
   animation: slideOut 0.3s forwards;
 }
 
-/* Loading spinner */
-.spinner-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 200px;
-}
-
-/* Empty state */
-.empty-state {
-  text-align: center;
-  padding: 2rem;
-  color: #777;
-}
-
-.empty-state i {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.5;
-}
-
-/* Transition effects */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
-}
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@media (max-width: 768px) {
-  /* Improved task item layout for small screens */
-  .task-item {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 1rem;
-  }
-
-  /* Better spacing for task content */
-  .task-item > div:first-child {
-    width: 100%;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Make task name wrap properly */
-  .task-item p {
-    white-space: normal;
-    word-break: break-word;
-    margin-bottom: 0.5rem;
-  }
-
-  /* Stack badges vertically on small screens */
-  .task-item .d-flex.align-items-center.gap-2 {
-    flex-wrap: wrap;
-    gap: 0.5rem !important;
-  }
-
-  /* Full width for action buttons on small screens */
-  .task-item > div:last-child {
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  /* Adjust badge sizes */
-  .badge {
-    font-size: 0.75rem;
-    padding: 0.3em 0.6em;
-  }
-
-  /* Make day badges smaller in all tasks view */
-  .day-badge {
-    font-size: 0.7rem;
-    padding: 0.2em 0.4em;
-  }
-}
-
-@media (max-width: 576px) {
-  /* Even more compact layout for very small screens */
-  .task-item {
-    padding: 0.75rem;
-  }
-
-  /* Smaller font size for task name */
-  .task-item p {
-    font-size: 1rem;
-  }
-
-  /* Compact buttons */
-  .task-item .btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
-  }
-}
-
 /* Custom styles for SweetAlert */
 .swal2-popup {
   width: 30em !important;
@@ -478,25 +370,45 @@ body {
   border: 1px solid #333 !important;
 }
 
-/* Make title smaller */
 .swal2-title {
   font-size: 1.1rem !important;
   margin-bottom: 0.5em !important;
 }
 
-/* Make content text smaller */
 .swal2-content {
   font-size: 0.9rem !important;
 }
 
-/* Make buttons smaller */
 .swal2-actions {
   margin: 1em auto 0 !important;
 }
 
-.swal2-confirm,
-.swal2-cancel {
-  padding: 0.35em 0.75em !important;
-  font-size: 0.9rem !important;
+.swal2-confirm {
   background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  color: var(--text-color) !important;
+  transition: all 0.3s ease;
+}
+
+.swal2-confirm:hover,
+.swal2-confirm:focus {
+  background-color: var(--primary-hover) !important;
+  border-color: var(--primary-hover) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(25, 103, 210, 0.3);
+}
+
+.swal2-cancel {
+  background-color: var(--danger-color) !important;
+  border-color: var(--danger-color) !important;
+  color: var(--text-color) !important;
+  transition: all 0.3s ease;
+}
+
+.swal2-cancel:hover,
+.swal2-cancel:focus {
+  background-color: #a33124 !important;
+  border-color: #a33124 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(192, 57, 43, 0.3);
 }
