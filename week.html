@@ -14,48 +14,57 @@
         rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1967d2;
-            --primary-hover: #1a73e8;
-            --day-header-bg: #333;
+            --primary-color: #4a6bff;
+            --primary-hover: #5d7aff;
+            --day-header-bg: #2a2a2a;
             --task-bg: #2a2a2a;
             --task-hover: #333;
             --multi-day-bg: #252525;
             --border-color: #444;
-            --text-muted: #6c757d;
+            --text-muted: #8a8a8a;
+            --completed-color: #4caf50;
+            --in-progress-color: #ff9800;
+            --spanning-task-height: 60px;
+            --task-margin: 8px;
+            --task-padding: 12px;
         }
 
         body {
             font-family: 'Poppins', sans-serif;
             background-color: #1e1e1e;
             color: #f8f9fa;
+            line-height: 1.6;
         }
 
         .container-fluid {
             padding: 0 1.5rem;
+            max-width: 1400px;
         }
 
         .page-title {
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 0.5rem;
             color: #f8f9fa;
-            font-size: 2rem;
+            font-size: 2.25rem;
+            letter-spacing: -0.5px;
         }
 
         .page-subtitle {
             color: var(--text-muted);
             margin-bottom: 2rem;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            font-weight: 400;
         }
 
         .week-view-container {
             background-color: #222;
-            border-radius: 8px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
 
         .day-column {
-            min-height: 400px;
+            min-height: 500px;
             border-right: 1px solid var(--border-color);
             position: relative;
             padding: 0;
@@ -67,11 +76,11 @@
 
         .day-header {
             background-color: var(--day-header-bg);
-            padding: 16px;
+            padding: 18px;
             text-align: center;
             font-weight: 600;
-            border-bottom: 2px solid var(--primary-color);
-            font-size: 1.1rem;
+            border-bottom: 3px solid var(--primary-color);
+            font-size: 1.2rem;
             position: sticky;
             top: 0;
             z-index: 10;
@@ -79,28 +88,61 @@
 
         .day-badge {
             background-color: var(--primary-color) !important;
-            font-weight: 500;
-            font-size: 0.75rem;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 0.35em 0.65em;
         }
 
         .task-item {
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 6px;
+            padding: var(--task-padding);
+            margin: var(--task-margin) 12px;
+            border-radius: 8px;
             background-color: var(--task-bg);
-            transition: all 0.2s ease;
             font-size: 0.95rem;
             border: 1px solid var(--border-color);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            min-height: 44px;
+            transition: all 0.2s ease;
         }
 
-        .task-item:hover {
-            background-color: var(--task-hover);
-            transform: translateY(-1px);
+
+
+        .task-item.completed {
+            border-left: 4px solid var(--completed-color);
+            opacity: 0.8;
+        }
+
+        .task-item.completed .task-name {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .task-item.in-progress {
+            border-left: 4px solid var(--in-progress-color);
+        }
+
+        .task-status {
+            margin-left: 10px;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .task-status.completed {
+            color: var(--completed-color);
+        }
+
+        .task-status.in-progress {
+            color: var(--in-progress-color);
         }
 
         .multi-day-task {
             background-color: var(--multi-day-bg);
+            flex-direction: column;
+            align-items: flex-start;
+            padding: var(--task-padding);
         }
 
         .multi-day-task-header {
@@ -109,6 +151,8 @@
             align-items: center;
             cursor: pointer;
             font-weight: 500;
+            width: 100%;
+            min-height: 20px;
         }
 
         .multi-day-task-days {
@@ -117,17 +161,19 @@
             margin-top: 6px;
             display: flex;
             align-items: center;
+            width: 100%;
         }
 
         .multi-day-task-days i {
             margin-right: 6px;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
         }
 
         .collapse-icon {
             transition: transform 0.2s ease;
             color: var(--text-muted);
             font-size: 0.9rem;
+            flex-shrink: 0;
         }
 
         .collapsed .collapse-icon {
@@ -136,49 +182,112 @@
 
         .spanning-task {
             position: absolute;
-            left: 0;
-            right: 0;
+            left: 12px;
+            right: 12px;
             z-index: 5;
             background-color: var(--task-bg);
             color: white;
-            padding: 10px 12px;
-            border-radius: 6px;
-            margin: 4px 0;
+            padding: var(--task-padding);
+            border-radius: 8px;
+            margin: var(--task-margin) 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
             font-size: 0.95rem;
             border: 1px solid var(--border-color);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            transition: all 0.2s ease;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: var(--spanning-task-height);
+            transition: all 0.2s ease;
         }
 
-        .spanning-task:hover {
-            background-color: var(--task-hover);
+
+
+        .spanning-task.completed {
+            border-left: 4px solid var(--completed-color);
+            opacity: 0.8;
         }
 
         .spanning-task-container {
             position: relative;
-            height: 38px;
-            margin-bottom: 8px;
+            height: calc(var(--spanning-task-height) + var(--task-margin) * 2);
+            margin-bottom: 0;
+            padding: 0 12px;
         }
 
         .day-content {
-            margin-top: 50px;
+            margin-top: calc(var(--spanning-task-height) + var(--task-margin) * 2);
+            padding: 0;
         }
 
         .empty-day-message {
             text-align: center;
             color: var(--text-muted);
-            padding: 20px 0;
-            font-size: 0.9rem;
+            padding: 30px 12px;
+            font-size: 0.95rem;
         }
 
         .empty-day-message i {
-            font-size: 1.5rem;
-            margin-bottom: 8px;
-            opacity: 0.7;
+            font-size: 2rem;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        .task-name {
+            flex-grow: 1;
+            line-height: 1.4;
+        }
+
+        .completion-indicators {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .day-indicator {
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .day-indicator.completed {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: var(--completed-color);
+            color: var(--completed-color);
+        }
+
+        .spanning-completion-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-top: 4px;
+            justify-content: center;
+        }
+
+        .spanning-day-indicator {
+            font-size: 0.7rem;
+            padding: 1px 4px;
+            border-radius: 3px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+        }
+
+        .spanning-day-indicator.completed {
+            background-color: rgba(76, 175, 80, 0.2);
+            border-color: var(--completed-color);
+            color: var(--completed-color);
         }
 
         @media (max-width: 768px) {
@@ -187,6 +296,7 @@
                 border-right: none;
                 border-bottom: 1px solid var(--border-color);
                 margin-bottom: 20px;
+                padding-bottom: 0;
             }
 
             .day-column:last-child {
@@ -201,6 +311,19 @@
 
             .spanning-task-container {
                 display: none;
+            }
+
+            .page-title {
+                font-size: 1.8rem;
+            }
+
+            .page-subtitle {
+                font-size: 1rem;
+            }
+
+            .task-item {
+                margin: 6px 8px;
+                padding: 10px;
             }
         }
     </style>
@@ -356,12 +479,12 @@
 
                 // Spanning tasks container
                 const spanningContainer = document.createElement('div');
-                spanningContainer.className = 'spanning-task-container p-1';
+                spanningContainer.className = 'spanning-task-container';
                 dayCol.appendChild(spanningContainer);
 
                 // Regular tasks container
                 const tasksContainer = document.createElement('div');
-                tasksContainer.className = 'day-content p-1';
+                tasksContainer.className = 'day-content';
 
                 if (tasksByDay[day].length === 0) {
                     tasksContainer.innerHTML = `
@@ -374,6 +497,7 @@
                     tasksByDay[day].forEach(task => {
                         const isMultiDay = task.allDays.length > 1;
                         const isSpanning = spanningTasks.some(t => t.name === task.name);
+                        const isCompleted = task.completed && task.completed[day];
 
                         if (isSpanning && task.allDays[0] === day) {
                             // This will be handled in the spanning tasks pass
@@ -381,14 +505,15 @@
                         else if (isMultiDay && task.allDays[0] === day && !isSpanning) {
                             // Multi-day but not consecutive
                             const taskItem = document.createElement('div');
-                            taskItem.className = 'task-item multi-day-task';
+                            taskItem.className = `task-item multi-day-task ${isCompleted ? 'completed' : ''}`;
 
                             const taskHeader = document.createElement('div');
                             taskHeader.className = 'multi-day-task-header';
                             taskHeader.setAttribute('data-bs-toggle', 'collapse');
                             taskHeader.setAttribute('data-bs-target', `#task-${task.name.replace(/\s+/g, '-')}`);
                             taskHeader.innerHTML = `
-                                <span>${task.name}</span>
+                                <span class="task-name">${task.name}</span>
+                                ${isCompleted ? '<span class="task-status completed"><i class="fas fa-check-circle"></i></span>' : ''}
                                 <i class="fas fa-chevron-down collapse-icon"></i>
                             `;
 
@@ -399,14 +524,28 @@
                                 <span>${formatDayList(task.allDays)}</span>
                             `;
 
+                            // Add completion indicators for multi-day tasks
+                            const completionIndicators = document.createElement('div');
+                            completionIndicators.className = 'completion-indicators';
+                            task.allDays.forEach(taskDay => {
+                                const isTaskCompleted = task.completed && task.completed[taskDay];
+                                const dayIndicator = document.createElement('span');
+                                dayIndicator.className = `day-indicator ${isTaskCompleted ? 'completed' : ''}`;
+                                dayIndicator.innerHTML = `${capitalize(taskDay).substring(0, 3)}${isTaskCompleted ? ' <i class="fas fa-check" style="font-size: 0.6rem;"></i>' : ''}`;
+                                completionIndicators.appendChild(dayIndicator);
+                            });
+
                             taskItem.appendChild(taskHeader);
                             taskItem.appendChild(taskDays);
+                            taskItem.appendChild(completionIndicators);
                             tasksContainer.appendChild(taskItem);
                         } else if (!isMultiDay) {
                             // Single day task
                             const taskItem = document.createElement('div');
-                            taskItem.className = 'task-item';
-                            taskItem.textContent = task.name;
+                            taskItem.className = `task-item ${isCompleted ? 'completed' : ''}`;
+                            taskItem.innerHTML = `
+                                <span class="task-name">${task.name}</span>
+                            `;
                             tasksContainer.appendChild(taskItem);
                         }
                     });
@@ -423,23 +562,40 @@
                 const lastDayIndex = daysOfWeek.indexOf(task.lastDay);
                 const spanCount = lastDayIndex - firstDayIndex + 1;
 
+                // Check if any day is completed
+                const anyDayCompleted = task.allDays.some(day => task.completed && task.completed[day]);
+
                 // Create the spanning element
                 const spanningElement = document.createElement('div');
-                spanningElement.className = 'spanning-task';
-                spanningElement.textContent = task.name;
-                spanningElement.style.width = `calc(${spanCount * 100}% + ${spanCount - 1}px)`;
+                spanningElement.className = `spanning-task ${anyDayCompleted ? 'completed' : ''}`;
+
+                // Create completion indicators for spanning tasks
+                const completionInfo = task.allDays.map(day => {
+                    const isCompleted = task.completed && task.completed[day];
+                    return `<span class="spanning-day-indicator ${isCompleted ? 'completed' : ''}">${capitalize(day).substring(0, 3)}</span>`;
+                }).join('');
+
+                spanningElement.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                        <span class="task-name" style="font-weight: 500;">${task.name}</span>
+                        <div class="spanning-completion-info">${completionInfo}</div>
+                    </div>
+                `;
+                spanningElement.style.width = `calc(${spanCount * 100}% + ${(spanCount - 1) * 12}px)`;
+                spanningElement.style.left = '12px';
+                spanningElement.style.right = 'auto';
 
                 // Add it to the first day's container
                 const firstDayContainer = dayColumns[task.firstDay].querySelector('.spanning-task-container');
                 firstDayContainer.appendChild(spanningElement);
 
-                // Hide the task from other days' regular lists
+                // Add placeholder spacing for other days
                 for (let i = firstDayIndex + 1; i <= lastDayIndex; i++) {
                     const day = daysOfWeek[i];
                     const dayContainer = dayColumns[day];
                     const placeholder = document.createElement('div');
-                    placeholder.style.height = '38px';
-                    placeholder.style.marginBottom = '8px';
+                    placeholder.style.height = `calc(var(--spanning-task-height) + var(--task-margin) * 2)`;
+                    placeholder.style.marginBottom = '0';
                     dayContainer.querySelector('.spanning-task-container').appendChild(placeholder);
                 }
             });
