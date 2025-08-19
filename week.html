@@ -12,62 +12,11 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
+    <!-- Custom CSS -->
     <style>
-        :root {
-            --primary-color: #4a6bff;
-            --primary-hover: #5d7aff;
-            --day-header-bg: #2a2a2a;
-            --task-bg: #2a2a2a;
-            --task-hover: #333;
-            --multi-day-bg: #252525;
-            --border-color: #444;
-            --text-muted: #8a8a8a;
-            --completed-color: #4caf50;
-            --in-progress-color: #ff9800;
-            --spanning-task-height: 60px;
-            --task-margin: 8px;
-            --task-padding: 12px;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #1e1e1e;
-            color: #f8f9fa;
-            line-height: 1.6;
-        }
-
-        .container-fluid {
-            padding: 0 1.5rem;
-            max-width: 1400px;
-        }
-
-        .page-title {
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            color: #f8f9fa;
-            font-size: 2.25rem;
-            letter-spacing: -0.5px;
-        }
-
-        .page-subtitle {
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            font-weight: 400;
-        }
-
-        .week-view-container {
-            background-color: #222;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-
         .day-column {
-            min-height: 500px;
-            border-right: 1px solid var(--border-color);
-            position: relative;
-            padding: 0;
+            min-height: 300px;
+            border-right: 1px solid #444;
         }
 
         .day-column:last-child {
@@ -75,256 +24,45 @@
         }
 
         .day-header {
-            background-color: var(--day-header-bg);
-            padding: 18px;
+            background-color: #333;
+            padding: 15px;
             text-align: center;
-            font-weight: 600;
-            border-bottom: 3px solid var(--primary-color);
-            font-size: 1.2rem;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .day-badge {
-            background-color: var(--primary-color) !important;
-            font-weight: 600;
-            font-size: 0.8rem;
-            padding: 0.35em 0.65em;
+            font-weight: bold;
+            border-bottom: 2px solid #1967d2;
+            font-size: 1.1rem;
         }
 
         .task-item {
-            padding: var(--task-padding);
-            margin: var(--task-margin) 12px;
-            border-radius: 8px;
-            background-color: var(--task-bg);
-            font-size: 0.95rem;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-height: 44px;
-            transition: all 0.2s ease;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            background-color: #2a2a2a;
+            transition: all 0.2s;
+            color: white;
+            border-left: 4px solid #1967d2;
+            border: 1px solid #444;
         }
-
-
 
         .task-item.completed {
-            border-left: 4px solid var(--completed-color);
-            opacity: 0.8;
-        }
-
-        .task-item.completed .task-name {
             text-decoration: line-through;
-            color: var(--text-muted);
+            opacity: 0.7;
         }
 
-        .task-item.in-progress {
-            border-left: 4px solid var(--in-progress-color);
+        .page-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #f8f9fa;
         }
 
-        .task-status {
-            margin-left: 10px;
-            font-size: 0.9rem;
-            flex-shrink: 0;
+        .page-subtitle {
+            color: #6c757d;
+            margin-bottom: 2rem;
         }
 
-        .task-status.completed {
-            color: var(--completed-color);
-        }
-
-        .task-status.in-progress {
-            color: var(--in-progress-color);
-        }
-
-        .multi-day-task {
-            background-color: var(--multi-day-bg);
-            flex-direction: column;
-            align-items: flex-start;
-            padding: var(--task-padding);
-        }
-
-        .multi-day-task-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            font-weight: 500;
-            width: 100%;
-            min-height: 20px;
-        }
-
-        .multi-day-task-days {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 6px;
-            display: flex;
-            align-items: center;
-            width: 100%;
-        }
-
-        .multi-day-task-days i {
-            margin-right: 6px;
-            font-size: 0.75rem;
-        }
-
-        .collapse-icon {
-            transition: transform 0.2s ease;
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            flex-shrink: 0;
-        }
-
-        .collapsed .collapse-icon {
-            transform: rotate(-90deg);
-        }
-
-        .spanning-task {
-            position: absolute;
-            left: 12px;
-            right: 12px;
-            z-index: 5;
-            background-color: var(--task-bg);
-            color: white;
-            padding: var(--task-padding);
-            border-radius: 8px;
-            margin: var(--task-margin) 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 0.95rem;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: var(--spanning-task-height);
-            transition: all 0.2s ease;
-        }
-
-
-
-        .spanning-task.completed {
-            border-left: 4px solid var(--completed-color);
-            opacity: 0.8;
-        }
-
-        .spanning-task-container {
-            position: relative;
-            height: calc(var(--spanning-task-height) + var(--task-margin) * 2);
-            margin-bottom: 0;
-            padding: 0 12px;
-        }
-
-        .day-content {
-            margin-top: calc(var(--spanning-task-height) + var(--task-margin) * 2);
-            padding: 0;
-        }
-
-        .empty-day-message {
-            text-align: center;
-            color: var(--text-muted);
-            padding: 30px 12px;
-            font-size: 0.95rem;
-        }
-
-        .empty-day-message i {
-            font-size: 2rem;
-            margin-bottom: 12px;
-            opacity: 0.6;
-        }
-
-        .task-name {
-            flex-grow: 1;
-            line-height: 1.4;
-        }
-
-        .completion-indicators {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: 8px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-            width: 100%;
-        }
-
-        .day-indicator {
-            padding: 2px 6px;
-            border-radius: 4px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--border-color);
-            font-size: 0.7rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 2px;
-        }
-
-        .day-indicator.completed {
-            background-color: rgba(76, 175, 80, 0.2);
-            border-color: var(--completed-color);
-            color: var(--completed-color);
-        }
-
-        .spanning-completion-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 3px;
-            margin-top: 4px;
-            justify-content: center;
-        }
-
-        .spanning-day-indicator {
-            font-size: 0.7rem;
-            padding: 1px 4px;
-            border-radius: 3px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--border-color);
-        }
-
-        .spanning-day-indicator.completed {
-            background-color: rgba(76, 175, 80, 0.2);
-            border-color: var(--completed-color);
-            color: var(--completed-color);
-        }
-
-        @media (max-width: 768px) {
-            .day-column {
-                min-height: auto;
-                border-right: none;
-                border-bottom: 1px solid var(--border-color);
-                margin-bottom: 20px;
-                padding-bottom: 0;
-            }
-
-            .day-column:last-child {
-                border-bottom: none;
-                margin-bottom: 0;
-            }
-
-            .day-content {
-                margin-top: 0;
-                padding-bottom: 20px;
-            }
-
-            .spanning-task-container {
-                display: none;
-            }
-
-            .page-title {
-                font-size: 1.8rem;
-            }
-
-            .page-subtitle {
-                font-size: 1rem;
-            }
-
-            .task-item {
-                margin: 6px 8px;
-                padding: 10px;
-            }
+        body {
+            background-color: #1a1a1a;
+            color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
@@ -340,7 +78,7 @@
             </div>
         </div>
 
-        <div class="row week-view-container" id="weekView">
+        <div class="row" id="weekView">
             <!-- Days will be populated here by JavaScript -->
             <div class="col text-center py-5">
                 <div class="spinner-border text-primary" role="status">
@@ -382,23 +120,20 @@
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
-        // Function to format day list
-        function formatDayList(days) {
-            return days.map(day => capitalize(day)).join(', ');
-        }
-
-        // Check if days are consecutive
-        function areDaysConsecutive(days) {
-            const sortedDays = [...days].sort((a, b) => daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b));
-
-            for (let i = 1; i < sortedDays.length; i++) {
-                const prevIndex = daysOfWeek.indexOf(sortedDays[i - 1]);
-                const currentIndex = daysOfWeek.indexOf(sortedDays[i]);
-                if (currentIndex !== prevIndex + 1) {
-                    return false;
-                }
+        // Function to generate a unique color for each task based on its name
+        function getColorForTask(taskName) {
+            // Simple hash function to convert string to a number
+            let hash = 0;
+            for (let i = 0; i < taskName.length; i++) {
+                hash = taskName.charCodeAt(i) + ((hash << 5) - hash);
             }
-            return true;
+
+            // Generate HSL color values
+            const hue = hash % 360;
+            const saturation = 70 + (hash % 15); // 70-85%
+            const lightness = 45 + (hash % 10); // 45-55%
+
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
         }
 
         // Load tasks and render week view
@@ -411,197 +146,71 @@
                 // Filter only regular tasks
                 const regularTasks = tasks.filter(task => task.category === 'regular');
 
-                // Create a map of tasks by their name (for multi-day tasks)
-                const taskMap = {};
-                regularTasks.forEach(task => {
-                    if (!taskMap[task.name]) {
-                        taskMap[task.name] = {
-                            ...task,
-                            allDays: [...task.days]
-                        };
-                    } else {
-                        // Merge days if task with same name exists
-                        taskMap[task.name].allDays = [
-                            ...new Set([...taskMap[task.name].allDays, ...task.days])
-                        ].sort((a, b) =>
-                            daysOfWeek.indexOf(a) - daysOfWeek.indexOf(b)
-                        );
-                    }
-                });
-
                 // Group tasks by day
                 const tasksByDay = {};
                 daysOfWeek.forEach(day => {
-                    tasksByDay[day] = [];
-                    Object.values(taskMap).forEach(task => {
-                        if (task.days.includes(day)) {
-                            tasksByDay[day].push(task);
-                        }
-                    });
+                    tasksByDay[day] = regularTasks.filter(task =>
+                        task.days && task.days.includes(day));
                 });
 
-                renderWeekView(tasksByDay, taskMap);
+                renderWeekView(tasksByDay);
             });
         }
 
         // Render the week view
-        function renderWeekView(tasksByDay, taskMap) {
+        function renderWeekView(tasksByDay) {
             const weekView = document.getElementById('weekView');
             weekView.innerHTML = '';
 
-            // First pass: identify all spanning tasks
-            const spanningTasks = [];
-            Object.values(taskMap).forEach(task => {
-                if (task.allDays.length > 1 && areDaysConsecutive(task.allDays)) {
-                    spanningTasks.push({
-                        ...task,
-                        firstDay: task.allDays[0],
-                        lastDay: task.allDays[task.allDays.length - 1]
-                    });
-                }
-            });
-
-            // Create columns for each day
-            const dayColumns = {};
             daysOfWeek.forEach(day => {
+                const dayTasks = tasksByDay[day] || [];
+
                 const dayCol = document.createElement('div');
                 dayCol.className = 'col-md day-column p-0';
-                dayCol.id = `day-${day}`;
 
                 // Day header
                 const dayHeader = document.createElement('div');
                 dayHeader.className = 'day-header';
                 dayHeader.innerHTML = `
                     ${capitalize(day)} 
-                    <span class="badge day-badge ms-1">${tasksByDay[day].length}</span>
+                    <span class="badge bg-primary ms-1">${dayTasks.length}</span>
                 `;
                 dayCol.appendChild(dayHeader);
 
-                // Spanning tasks container
-                const spanningContainer = document.createElement('div');
-                spanningContainer.className = 'spanning-task-container';
-                dayCol.appendChild(spanningContainer);
-
-                // Regular tasks container
+                // Tasks container
                 const tasksContainer = document.createElement('div');
-                tasksContainer.className = 'day-content';
+                tasksContainer.className = 'p-2';
 
-                if (tasksByDay[day].length === 0) {
+                if (dayTasks.length === 0) {
                     tasksContainer.innerHTML = `
-                        <div class="empty-day-message">
+                        <div class="text-center text-muted py-3">
                             <i class="far fa-smile"></i>
                             <p class="small mt-2">No tasks scheduled</p>
                         </div>
                     `;
                 } else {
-                    tasksByDay[day].forEach(task => {
-                        const isMultiDay = task.allDays.length > 1;
-                        const isSpanning = spanningTasks.some(t => t.name === task.name);
-                        const isCompleted = task.completed && task.completed[day];
+                    dayTasks.forEach(task => {
+                        const taskItem = document.createElement('div');
+                        taskItem.className = 'task-item';
 
-                        if (isSpanning && task.allDays[0] === day) {
-                            // This will be handled in the spanning tasks pass
+                        // Check if task is completed for this day
+                        if (task.completed && task.completed[day]) {
+                            taskItem.classList.add('completed');
                         }
-                        else if (isMultiDay && task.allDays[0] === day && !isSpanning) {
-                            // Multi-day but not consecutive
-                            const taskItem = document.createElement('div');
-                            taskItem.className = `task-item multi-day-task ${isCompleted ? 'completed' : ''}`;
 
-                            const taskHeader = document.createElement('div');
-                            taskHeader.className = 'multi-day-task-header';
-                            taskHeader.setAttribute('data-bs-toggle', 'collapse');
-                            taskHeader.setAttribute('data-bs-target', `#task-${task.name.replace(/\s+/g, '-')}`);
-                            taskHeader.innerHTML = `
-                                <span class="task-name">${task.name}</span>
-                                ${isCompleted ? '<span class="task-status completed"><i class="fas fa-check-circle"></i></span>' : ''}
-                                <i class="fas fa-chevron-down collapse-icon"></i>
-                            `;
+                        taskItem.textContent = task.name;
 
-                            const taskDays = document.createElement('div');
-                            taskDays.className = 'multi-day-task-days';
-                            taskDays.innerHTML = `
-                                <i class="fas fa-calendar-day"></i>
-                                <span>${formatDayList(task.allDays)}</span>
-                            `;
+                        // Set unique color for this task
+                        const taskColor = getColorForTask(task.name);
+                        taskItem.style.borderLeftColor = taskColor;
 
-                            // Add completion indicators for multi-day tasks
-                            const completionIndicators = document.createElement('div');
-                            completionIndicators.className = 'completion-indicators';
-                            task.allDays.forEach(taskDay => {
-                                const isTaskCompleted = task.completed && task.completed[taskDay];
-                                const dayIndicator = document.createElement('span');
-                                dayIndicator.className = `day-indicator ${isTaskCompleted ? 'completed' : ''}`;
-                                dayIndicator.innerHTML = `${capitalize(taskDay).substring(0, 3)}${isTaskCompleted ? ' <i class="fas fa-check" style="font-size: 0.6rem;"></i>' : ''}`;
-                                completionIndicators.appendChild(dayIndicator);
-                            });
-
-                            taskItem.appendChild(taskHeader);
-                            taskItem.appendChild(taskDays);
-                            taskItem.appendChild(completionIndicators);
-                            tasksContainer.appendChild(taskItem);
-                        } else if (!isMultiDay) {
-                            // Single day task
-                            const taskItem = document.createElement('div');
-                            taskItem.className = `task-item ${isCompleted ? 'completed' : ''}`;
-                            taskItem.innerHTML = `
-                                <span class="task-name">${task.name}</span>
-                            `;
-                            tasksContainer.appendChild(taskItem);
-                        }
+                        tasksContainer.appendChild(taskItem);
                     });
                 }
 
                 dayCol.appendChild(tasksContainer);
                 weekView.appendChild(dayCol);
-                dayColumns[day] = dayCol;
             });
-
-            // Second pass: add spanning tasks
-            spanningTasks.forEach(task => {
-                const firstDayIndex = daysOfWeek.indexOf(task.firstDay);
-                const lastDayIndex = daysOfWeek.indexOf(task.lastDay);
-                const spanCount = lastDayIndex - firstDayIndex + 1;
-
-                // Check if any day is completed
-                const anyDayCompleted = task.allDays.some(day => task.completed && task.completed[day]);
-
-                // Create the spanning element
-                const spanningElement = document.createElement('div');
-                spanningElement.className = `spanning-task ${anyDayCompleted ? 'completed' : ''}`;
-
-                // Create completion indicators for spanning tasks
-                const completionInfo = task.allDays.map(day => {
-                    const isCompleted = task.completed && task.completed[day];
-                    return `<span class="spanning-day-indicator ${isCompleted ? 'completed' : ''}">${capitalize(day).substring(0, 3)}</span>`;
-                }).join('');
-
-                spanningElement.innerHTML = `
-                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                        <span class="task-name" style="font-weight: 500;">${task.name}</span>
-                        <div class="spanning-completion-info">${completionInfo}</div>
-                    </div>
-                `;
-                spanningElement.style.width = `calc(${spanCount * 100}% + ${(spanCount - 1) * 12}px)`;
-                spanningElement.style.left = '12px';
-                spanningElement.style.right = 'auto';
-
-                // Add it to the first day's container
-                const firstDayContainer = dayColumns[task.firstDay].querySelector('.spanning-task-container');
-                firstDayContainer.appendChild(spanningElement);
-
-                // Add placeholder spacing for other days
-                for (let i = firstDayIndex + 1; i <= lastDayIndex; i++) {
-                    const day = daysOfWeek[i];
-                    const dayContainer = dayColumns[day];
-                    const placeholder = document.createElement('div');
-                    placeholder.style.height = `calc(var(--spanning-task-height) + var(--task-margin) * 2)`;
-                    placeholder.style.marginBottom = '0';
-                    dayContainer.querySelector('.spanning-task-container').appendChild(placeholder);
-                }
-            });
-
-            // Initialize Bootstrap collapse
-            new bootstrap.Collapse('[data-bs-toggle="collapse"]');
         }
 
         // Initialize the page
