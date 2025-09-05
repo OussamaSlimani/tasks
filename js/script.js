@@ -41,10 +41,11 @@ const pointsDisplay = document.getElementById("pointsDisplay");
 const dayOptions = document.querySelectorAll(".day-option");
 const saveTaskBtn = document.getElementById("saveTaskBtn");
 const updateTaskBtn = document.getElementById("updateTaskBtn");
-const categoryFilter = document.getElementById("categoryFilter");
+const categoryTabs = document.querySelectorAll(".category-tab");
 
-// Current day filter (default to last viewed or 'all')
+// Current day filter and category filter
 let currentDay = localStorage.getItem("lastViewedDay") || "all";
+let currentCategoryFilter = "regular"; // Default to "regular" instead of "all"
 let tasksListener = null;
 
 // Initialize the app
@@ -97,6 +98,7 @@ async function createTask(taskData) {
       days: taskData.days,
       priority: taskData.priority,
       category: taskData.category,
+      time: taskData.time || "anytime", // Add time field
       completed: completedStatus,
       timestamp: Date.now(),
     };
@@ -180,6 +182,7 @@ async function updateTask(taskData) {
       days: taskData.days,
       priority: taskData.priority,
       category: taskData.category,
+      time: taskData.time || "anytime", // Add time field
       completed: newCompleted,
       timestamp: currentTask.timestamp || Date.now(),
     };
@@ -253,8 +256,12 @@ function setupTasksListener() {
         }));
       }
 
-      // Filter and render tasks based on current day
-      const filteredTasks = filterTasksByDay(tasks, currentDay);
+      // Filter and render tasks based on current day and category
+      const filteredTasks = filterTasksByDayAndCategory(
+        tasks,
+        currentDay,
+        currentCategoryFilter
+      );
       const stats = calculateStats(tasks, currentDay);
 
       renderTasks(filteredTasks);
@@ -273,32 +280,66 @@ function setupTasksListener() {
   );
 }
 
-// Filter and sort tasks by day and category
-function filterTasksByDay(tasks, day) {
+// Updated filter function to handle both day and category filtering
+function filterTasksByDayAndCategory(tasks, day, categoryFilter) {
+  let filteredTasks = [];
+
   if (day === "all") {
-    // For "All Tasks" view, show all tasks but filter by category if selected
-    const selectedCategory = categoryFilter.value;
-    tasks = tasks.filter(
-      (task) => selectedCategory === "all" || task.category === selectedCategory
+    // For "All Tasks" view, show all tasks
+    filteredTasks = [...tasks];
+  } else {
+    // Filter tasks for the specific day
+    filteredTasks = tasks.filter(
+      (task) => task.days && task.days.includes(day)
     );
-    return tasks;
+
+    // Sort day-specific tasks - uncompleted first, then by priority
+    filteredTasks = filteredTasks.sort((a, b) => {
+      const aCompleted = a.completed && a.completed[day];
+      const bCompleted = b.completed && b.completed[day];
+
+      // Uncompleted tasks come first
+      if (aCompleted && !bCompleted) return 1;
+      if (!aCompleted && bCompleted) return -1;
+
+      // If same completion status, sort by priority (critical first)
+      return a.priority - b.priority;
+    });
   }
 
-  // Filter tasks for the specific day
-  const dayTasks = tasks.filter((task) => task.days && task.days.includes(day));
+  // Apply category filter (no "all" option anymore)
+  filteredTasks = filteredTasks.filter(
+    (task) => task.category === categoryFilter
+  );
 
-  // Sort tasks - uncompleted first, then by priority (critical first)
-  return dayTasks.sort((a, b) => {
-    const aCompleted = a.completed && a.completed[day];
-    const bCompleted = b.completed && b.completed[day];
+  return filteredTasks;
+}
 
-    // Uncompleted tasks come first
-    if (aCompleted && !bCompleted) return 1;
-    if (!aCompleted && bCompleted) return -1;
+// Group tasks by time
+function groupTasksByTime(tasks) {
+  const timeOrder = ["morning", "anytime", "evening"];
+  const grouped = {
+    morning: [],
+    anytime: [],
+    evening: [],
+  };
 
-    // If same completion status, sort by priority (critical first)
-    return a.priority - b.priority;
+  tasks.forEach((task) => {
+    const time = task.time || "anytime";
+    if (grouped[time]) {
+      grouped[time].push(task);
+    } else {
+      grouped.anytime.push(task);
+    }
   });
+
+  // Return in the specified order, only including groups that have tasks
+  return timeOrder.reduce((result, time) => {
+    if (grouped[time].length > 0) {
+      result[time] = grouped[time];
+    }
+    return result;
+  }, {});
 }
 
 // Calculate statistics for a specific day
@@ -307,7 +348,11 @@ function calculateStats(tasks, day) {
     return null;
   }
 
-  const filteredTasks = filterTasksByDay(tasks, day);
+  const filteredTasks = filterTasksByDayAndCategory(
+    tasks,
+    day,
+    currentCategoryFilter
+  );
   const totalTasks = filteredTasks.length;
   const completedTasks = filteredTasks.filter(
     (task) => task.completed && task.completed[day]
@@ -358,9 +403,21 @@ function setupEventListeners() {
     });
   });
 
-  // Category filter change
-  categoryFilter.addEventListener("change", function () {
-    setupTasksListener();
+  // Category filter tabs
+  categoryTabs.forEach((tab) => {
+    tab.addEventListener("click", function (e) {
+      e.preventDefault();
+      currentCategoryFilter = this.getAttribute("data-category");
+
+      // Update active category tab
+      document
+        .querySelectorAll(".category-tab")
+        .forEach((tab) => tab.classList.remove("active"));
+      this.classList.add("active");
+
+      // Trigger re-rendering with current filter
+      setupTasksListener();
+    });
   });
 
   // Save new task
@@ -368,6 +425,7 @@ function setupEventListeners() {
     const taskName = document.getElementById("taskName").value;
     const taskDescription = document.getElementById("taskDescription").value;
     const taskPriority = document.getElementById("taskPriority").value;
+    const taskTime = document.getElementById("taskTime").value;
     const selectedDaysValue = document.getElementById("selectedDays").value;
     const selectedDays = selectedDaysValue ? selectedDaysValue.split(",") : [];
     const category = document.getElementById("taskCategory").value;
@@ -384,6 +442,7 @@ function setupEventListeners() {
       priority: parseInt(taskPriority),
       days: selectedDays,
       category: category,
+      time: taskTime,
       points: calculatePointsFromPriority(parseInt(taskPriority)),
     };
 
@@ -391,15 +450,14 @@ function setupEventListeners() {
     const result = await createTask(taskData);
 
     if (result.success) {
-      showSuccess("Task created successfully");
-
       // Reset form and close modal
       document.getElementById("taskForm").reset();
       document
         .querySelectorAll(".day-option")
         .forEach((opt) => opt.classList.remove("active"));
       document.getElementById("taskPriority").value = "3";
-      document.getElementById("taskCategory").value = "work";
+      document.getElementById("taskCategory").value = "regular";
+      document.getElementById("taskTime").value = "anytime";
       document.getElementById("selectedDays").value = "";
 
       bootstrap.Modal.getInstance(
@@ -418,6 +476,7 @@ function setupEventListeners() {
       "editTaskDescription"
     ).value;
     const taskPriority = document.getElementById("editTaskPriority").value;
+    const taskTime = document.getElementById("editTaskTime").value;
     const selectedDaysValue = document.getElementById("editSelectedDays").value;
     const selectedDays = selectedDaysValue ? selectedDaysValue.split(",") : [];
     const category = document.getElementById("editTaskCategory").value;
@@ -435,6 +494,7 @@ function setupEventListeners() {
       priority: parseInt(taskPriority),
       days: selectedDays,
       category: category,
+      time: taskTime,
       points: calculatePointsFromPriority(parseInt(taskPriority)),
     };
 
@@ -442,7 +502,6 @@ function setupEventListeners() {
     const result = await updateTask(taskData);
 
     if (result.success) {
-      showSuccess("Task updated successfully");
       bootstrap.Modal.getInstance(
         document.getElementById("editTaskModal")
       ).hide();
@@ -465,12 +524,14 @@ function updateUIForDay(day) {
     currentDayTitle.textContent = "All Tasks";
     createTaskBtn.style.display = "block";
     statsSection.classList.add("d-none");
-    document.getElementById("filterSection").classList.remove("d-none");
+    // Always show filter tabs
+    document.getElementById("filterTabsSection").classList.remove("d-none");
   } else {
     currentDayTitle.textContent = day.charAt(0).toUpperCase() + day.slice(1);
     createTaskBtn.style.display = "none";
     statsSection.classList.remove("d-none");
-    document.getElementById("filterSection").classList.add("d-none");
+    // Show filter tabs for day views too
+    document.getElementById("filterTabsSection").classList.remove("d-none");
   }
 }
 
@@ -503,7 +564,7 @@ function getPriorityBadge(priority) {
     2: "fa-circle-exclamation",
     3: "fa-equals",
     4: "fa-arrow-down",
-    5: "fa-arrow-down-long",
+    5: "fa-times-circle",
   };
   return `<span class="badge ${getPriorityBadgeClass(priority)}">
     <i class="fas ${icons[priority] || "fa-info"}"></i>
@@ -519,6 +580,35 @@ function getCategoryBadge(category) {
   return `<span class="badge bg-secondary category-badge">
     <i class="fas ${categoryIcons[category]}"></i>
   </span>`;
+}
+
+function getTimeBadge(time) {
+  const timeIcons = {
+    morning: "fa-sun",
+    anytime: "fa-clock",
+    evening: "fa-moon",
+  };
+
+  const timeColors = {
+    morning: "bg-warning text-dark",
+    evening: "bg-info text-dark",
+    anytime: "bg-secondary",
+  };
+
+  return `<span class="badge ${timeColors[time]} time-badge">
+    <i class="fas ${timeIcons[time]}"></i> ${
+    time.charAt(0).toUpperCase() + time.slice(1)
+  }
+  </span>`;
+}
+
+function getTimeGroupTitle(time) {
+  const titles = {
+    morning: "Morning Tasks",
+    anytime: "Anytime Tasks",
+    evening: "Evening Tasks",
+  };
+  return titles[time] || "Tasks";
 }
 
 function calculatePointsFromPriority(priority) {
@@ -545,86 +635,106 @@ function loadTasks() {
   setupTasksListener();
 }
 
-// Render tasks for day/all views
+// Render tasks for day/all views - Updated to group by time
 function renderTasks(tasks) {
   if (!tasks || tasks.length === 0) {
     tasksList.innerHTML = '<div class="empty-message">No tasks found</div>';
     return;
   }
 
+  // Group tasks by time
+  const groupedTasks = groupTasksByTime(tasks);
   let html = "";
 
-  tasks.forEach((task) => {
-    const isCompleted =
-      currentDay !== "all" && task.completed && task.completed[currentDay];
+  // Render each time group
+  Object.keys(groupedTasks).forEach((timeGroup) => {
+    const timeTasks = groupedTasks[timeGroup];
 
+    // Add time group header
     html += `
-      <div class="list-group-item task-item m-1 d-flex justify-content-between align-items-center border ${
-        isCompleted ? "task-completed" : ""
-      }">
-        <div class="task-content">
-          <p class="mb-1 task-title" style="${
-            isCompleted ? "text-decoration: line-through; color: #6c757d;" : ""
-          }">${task.name}</p>
-          
-          <div class="d-flex align-items-center flex-wrap gap-1 task-meta">
-            ${getPriorityBadge(task.priority)}
-            ${getCategoryBadge(task.category)}
+      <div class="time-group-header mb-1 mt-4">
+        <h5 class="text-primary text-center pb-2">${getTimeGroupTitle(
+          timeGroup
+        )}</h5>
+      </div>
     `;
 
-    if (currentDay === "all") {
-      html += `<div class="d-flex flex-wrap gap-1 task-days">`;
-      if (task.days) {
-        task.days.forEach((day) => {
-          const dayCompleted = task.completed?.[day] || false;
-          html += `
-            <span class="badge day-badge ${
-              dayCompleted ? "bg-success" : "bg-light text-dark"
-            }">
-              ${day.substring(0, 3)}
-            </span>
-          `;
-        });
+    // Render tasks in this time group
+    timeTasks.forEach((task) => {
+      const isCompleted =
+        currentDay !== "all" && task.completed && task.completed[currentDay];
+
+      html += `
+        <div class="list-group-item task-item m-1 d-flex justify-content-between align-items-center border ${
+          isCompleted ? "task-completed" : ""
+        }">
+          <div class="task-content">
+            <p class="mb-1 task-title" style="${
+              isCompleted
+                ? "text-decoration: line-through; color: #6c757d;"
+                : ""
+            }">${task.name}</p>
+            
+            <div class="d-flex align-items-center flex-wrap gap-1 task-meta">
+              ${getPriorityBadge(task.priority)}
+              ${getCategoryBadge(task.category)}
+              
+      `;
+
+      if (currentDay === "all") {
+        html += `<div class="d-flex flex-wrap gap-1 task-days">`;
+        if (task.days) {
+          task.days.forEach((day) => {
+            const dayCompleted = task.completed?.[day] || false;
+            html += `
+              <span class="badge day-badge ${
+                dayCompleted ? "bg-success" : "bg-light text-dark"
+              }">
+                ${day.substring(0, 3)}
+              </span>
+            `;
+          });
+        }
+        html += `</div>`;
       }
-      html += `</div>`;
-    }
 
-    html += `</div></div><div class="task-actions d-flex gap-1">`;
+      html += `</div></div><div class="task-actions d-flex gap-1">`;
 
-    // Description button (day-specific views only)
-    if (currentDay !== "all") {
-      // Show description button only if task has a description
-      if (task.description?.trim()) {
+      // Description button (day-specific views only)
+      if (currentDay !== "all") {
+        // Show description button only if task has a description
+        if (task.description?.trim()) {
+          html += `
+            <a href="${task.description}" target="_blank" class="btn btn-sm btn-outline-secondary description-btn" title="View Description">
+              <i class="fas fa-eye"></i>
+            </a>
+          `;
+        }
+
+        // Complete button
         html += `
-          <a href="${task.description}" target="_blank" class="btn btn-sm btn-outline-secondary description-btn" title="View Description">
-            <i class="fas fa-eye"></i>
-          </a>
+          <button class="btn btn-sm ${
+            isCompleted ? "btn-outline-secondary" : "btn-outline-success"
+          }"
+                  onclick="toggleTaskComplete('${task.id}', '${currentDay}')"
+                  title="${isCompleted ? "Mark Incomplete" : "Mark Complete"}">
+            <i class="fas ${isCompleted ? "fa-undo" : "fa-check"}"></i>
+          </button>
+        `;
+      } else {
+        // Edit & Delete (all tasks view only)
+        html += `
+          <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${task.id}')" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="deleteTaskById('${task.id}')" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
         `;
       }
 
-      // Complete button
-      html += `
-        <button class="btn btn-sm ${
-          isCompleted ? "btn-outline-secondary" : "btn-outline-success"
-        }"
-                onclick="toggleTaskComplete('${task.id}', '${currentDay}')"
-                title="${isCompleted ? "Mark Incomplete" : "Mark Complete"}">
-          <i class="fas ${isCompleted ? "fa-undo" : "fa-check"}"></i>
-        </button>
-      `;
-    } else {
-      // Edit & Delete (all tasks view only)
-      html += `
-        <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${task.id}')" title="Edit">
-          <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn btn-sm btn-outline-danger" onclick="deleteTaskById('${task.id}')" title="Delete">
-          <i class="fas fa-trash"></i>
-        </button>
-      `;
-    }
-
-    html += `</div></div>`;
+      html += `</div></div>`;
+    });
   });
 
   tasksList.innerHTML = html;
@@ -686,9 +796,7 @@ async function deleteTaskById(taskId) {
   const result = await confirmAction("This will permanently delete the task.");
   if (result.isConfirmed) {
     const deleteResult = await deleteTask(taskId);
-    if (deleteResult.success) {
-      showSuccess("Task deleted successfully");
-    } else {
+    if (!deleteResult.success) {
       showError("Error deleting task: " + deleteResult.message);
     }
   }
@@ -707,6 +815,7 @@ async function openEditModal(taskId) {
       task.description || "";
     document.getElementById("editTaskPriority").value = task.priority;
     document.getElementById("editTaskCategory").value = task.category;
+    document.getElementById("editTaskTime").value = task.time || "anytime";
 
     // Set days
     document.querySelectorAll(".edit-day-option").forEach((opt) => {
@@ -771,10 +880,8 @@ function confirmAction(message) {
     title: "Are you sure?",
     text: message,
     icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#1967d2",
-    cancelButtonColor: "#495057",
-    confirmButtonText: "Yes, proceed",
+    showCancelButton: false,
+    confirmButtonText: "Yes, delete it!",
     background: "#252525",
     color: "#e0e0e0",
   });

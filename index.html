@@ -123,20 +123,20 @@
                     </div>
                 </nav>
 
-                <!-- Category Filter -->
-                <div class="container-fluid px-3 mb-3" id="filterSection">
-                    <div class="row justify-content-end">
-                        <div class="col-md-4 col-sm-6 col-12">
-                            <div class="input-group ms-auto px-2">
-                                <span class="input-group-text"><i class="fas fa-filter"></i></span>
-                                <select class="form-select" id="categoryFilter">
-                                    <option value="all">All Categories</option>
-                                    <option value="repeated">Repeated Tasks</option>
-                                    <option value="regular">Regular Tasks</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Category Filter Tabs -->
+                <div class="container-fluid px-4 mb-4" id="filterTabsSection">
+                    <ul class="nav nav-tabs category-filter-tabs" id="categoryFilterTabs">
+                        <li class="nav-item">
+                            <button class="nav-link active category-tab" data-category="regular">
+                                <i class="fas fa-calendar-check me-2"></i>Regular
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link  category-tab" data-category="repeated">
+                                <i class="fas fa-repeat me-2"></i>Repeated
+                            </button>
+                        </li>
+                    </ul>
                 </div>
 
                 <!-- Stats Section -->
@@ -167,7 +167,6 @@
                     </div>
                 </div>
 
-
                 <!-- Tasks List -->
                 <div class="list-group px-3" id="tasksList">
                     <div class="text-center py-4">
@@ -179,7 +178,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Add Task Modal -->
     <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
@@ -204,7 +202,7 @@
                         </div>
 
                         <div class="row mb-3">
-                            <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="col-md-3 mb-3 mb-md-0">
                                 <label for="taskPriority" class="form-label">Priority</label>
                                 <select class="form-select" id="taskPriority" required>
                                     <option value="1">1 - Critical</option>
@@ -214,11 +212,19 @@
                                     <option value="5">5 - Minimal</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="taskCategory" class="form-label">Category</label>
                                 <select class="form-select" id="taskCategory" required>
                                     <option value="repeated">Repeated Task</option>
                                     <option value="regular" selected>Regular Task</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="taskTime" class="form-label">Time</label>
+                                <select class="form-select" id="taskTime" required>
+                                    <option value="morning">Morning</option>
+                                    <option value="evening">Evening</option>
+                                    <option value="anytime" selected>Anytime</option>
                                 </select>
                             </div>
                         </div>
@@ -275,7 +281,7 @@
                         </div>
 
                         <div class="row mb-3">
-                            <div class="col-md-4 mb-3 mb-md-0">
+                            <div class="col-md-3 mb-3 mb-md-0">
                                 <label for="editTaskPriority" class="form-label">Priority</label>
                                 <select class="form-select" id="editTaskPriority" required>
                                     <option value="1">1 - Critical</option>
@@ -285,12 +291,20 @@
                                     <option value="5">5 - Minimal</option>
                                 </select>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="editTaskCategory" class="form-label">Category</label>
                                 <select class="form-select" id="editTaskCategory" required>
                                     <option value="all">All Categories</option>
                                     <option value="repeated">Repeated Task</option>
                                     <option value="regular">Regular Task</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="editTaskTime" class="form-label">Time</label>
+                                <select class="form-select" id="editTaskTime" required>
+                                    <option value="morning">Morning</option>
+                                    <option value="evening">Evening</option>
+                                    <option value="anytime">Anytime</option>
                                 </select>
                             </div>
                         </div>

@@ -899,3 +899,30 @@ body {
 .spinner-border {
   transition: color 0.3s ease;
 }
+/********************************/
+.category-filter-tabs .nav-link {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+[data-bs-theme="dark"] .category-filter-tabs .nav-link {
+  color: #b0b0b0;
+}
+
+[data-bs-theme="dark"] .category-filter-tabs .nav-link:hover {
+  color: #ffffff;
+  background-color: rgba(40, 116, 166, 0.15);
+}
+
+[data-bs-theme="dark"] .category-filter-tabs .nav-link.active {
+  color: #ffffff;
+  background-color: var(--primary-color);
+}
+
+.nav-tabs {
+  border-bottom: none;
+  display: flex;
+  justify-content: end;
+  gap: 0.5rem;
+}
