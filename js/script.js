@@ -317,11 +317,12 @@ function filterTasksByDayAndCategory(tasks, day, categoryFilter) {
 
 // Group tasks by time
 function groupTasksByTime(tasks) {
-  const timeOrder = ["morning", "anytime", "evening"];
+  const timeOrder = ["morning", "anytime", "evening", "before-sleep"];
   const grouped = {
     morning: [],
     anytime: [],
     evening: [],
+    "before-sleep": [],
   };
 
   tasks.forEach((task) => {
@@ -582,31 +583,12 @@ function getCategoryBadge(category) {
   </span>`;
 }
 
-function getTimeBadge(time) {
-  const timeIcons = {
-    morning: "fa-sun",
-    anytime: "fa-clock",
-    evening: "fa-moon",
-  };
-
-  const timeColors = {
-    morning: "bg-warning text-dark",
-    evening: "bg-info text-dark",
-    anytime: "bg-secondary",
-  };
-
-  return `<span class="badge ${timeColors[time]} time-badge">
-    <i class="fas ${timeIcons[time]}"></i> ${
-    time.charAt(0).toUpperCase() + time.slice(1)
-  }
-  </span>`;
-}
-
 function getTimeGroupTitle(time) {
   const titles = {
     morning: "Morning Tasks",
     anytime: "Anytime Tasks",
     evening: "Evening Tasks",
+    "before-sleep": "Before Sleep Review",
   };
   return titles[time] || "Tasks";
 }
